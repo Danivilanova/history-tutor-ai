@@ -97,8 +97,26 @@ Remember to:
                 throw new Error(response.error.message);
               }
 
-              const { imageUrl } = response.data;
-              return "Slide generated successfully";
+              // Store the text and image URL in the database for the current section
+              if (sections?.lessonId) {
+                const { error: dbError } = await supabase
+                  .from('lesson_sections')
+                  .upsert({
+                    lesson_id: sections.lessonId,
+                    content: text,
+                    generated_content: [{
+                      generated_text: text,
+                      generated_image_url: response.data.imageUrl
+                    }]
+                  });
+
+                if (dbError) {
+                  console.error('Failed to save slide content:', dbError);
+                  toast.error('Failed to save slide content');
+                }
+              }
+
+              return `Generated slide with text: "${text}" and image: ${response.data.imageUrl}`;
             } catch (error) {
               console.error('Failed to generate slide image:', error);
               toast.error('Failed to generate slide image');
