@@ -35,34 +35,32 @@ serve(async (req) => {
       )
     }
 
-    console.log('Generating image for description:', image_description)
+    const sanitizedPrompt = image_description.slice(0, 500).trim()
 
-    const response = await fetch('https://fal.run/fal-ai/flux/schnell', {
+    const response = await fetch('https://fal.run/fal-ai/flux/dev', {
       method: 'POST',
       headers: {
         'Authorization': `Key ${falKey}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        prompt: image_description,
-        seed: Math.floor(Math.random() * 1000000),
-        num_images: 1,
+        input: {
+          prompt: sanitizedPrompt,
+          seed: Math.floor(Math.random() * 1000000),
+          image_size: "landscape_16_9",
+          num_images: 1,
+        }
       })
     })
 
     if (!response.ok) {
       const errorText = await response.text()
-      console.error('FAL AI API error:', errorText)
       throw new Error(`FAL AI API error: ${response.statusText} - ${errorText}`)
     }
 
     const result = await response.json()
-    console.log('Generated image result:', result)
-
-    // FAL AI returns an array of images, we'll take the first one
     const generatedImageUrl = result.images[0].url
 
-    // Download the image from FAL AI
     const imageResponse = await fetch(generatedImageUrl)
     if (!imageResponse.ok) {
       throw new Error('Failed to download generated image')
@@ -71,7 +69,6 @@ serve(async (req) => {
     const imageBlob = await imageResponse.blob()
     const fileName = `${crypto.randomUUID()}.png`
 
-    // Upload the image to Supabase Storage
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('slides')
       .upload(fileName, imageBlob, {
@@ -83,9 +80,6 @@ serve(async (req) => {
       throw new Error(`Failed to upload image to storage: ${uploadError.message}`)
     }
 
-    console.log('Successfully uploaded image:', fileName)
-
-    // Get the public URL for the uploaded image
     const { data: { publicUrl } } = supabase.storage
       .from('slides')
       .getPublicUrl(fileName)
