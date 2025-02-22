@@ -204,7 +204,7 @@ const LessonScreen = () => {
       const currentSection = sections[currentSlide];
 
       if (!currentSection.generated_content?.length) {
-        generateContent.mutate(currentSection.id);
+        // generateContent.mutate(currentSection.id);
       }
     }
   }, [currentSlide, sections]);
