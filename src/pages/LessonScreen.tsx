@@ -2,43 +2,29 @@
 import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { Card } from "@/components/ui/card";
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { useLocation } from 'react-router-dom';
 import SpeakingIndicator from '@/components/SpeakingIndicator';
 import LessonHeader from '@/components/lesson/LessonHeader';
 import SlideContent from '@/components/lesson/SlideContent';
 import QuizContent from '@/components/lesson/QuizContent';
 import { supabase } from "@/integrations/supabase/client";
 
-const SAMPLE_LESSON = {
-  title: "The Fall of Rome",
-  slides: [
-    {
-      text: "The Roman Empire was one of the most vast and powerful civilizations in world history.",
-      image: "https://images.unsplash.com/photo-1525874684015-58379d421a52?q=80&w=800&auto=format&fit=crop"
-    },
-    {
-      text: "At its height, Rome controlled territory from Britain to Egypt, from Spain to Syria.",
-      image: "https://images.unsplash.com/photo-1515861461225-1488dfdaf0a8?q=80&w=800&auto=format&fit=crop"
-    },
-    {
-      text: "However, by the 5th century AD, the empire faced numerous challenges that would lead to its eventual collapse.",
-      image: "https://images.unsplash.com/photo-1593001134154-fd927cdba783?q=80&w=800&auto=format&fit=crop"
-    }
-  ],
-  quiz: [
-    {
-      question: "When did the Western Roman Empire fall?",
-      options: ["476 AD", "300 AD"],
-      correct: "476 AD"
-    },
-    {
-      question: "What were some major causes of Rome's fall?",
-      options: ["Military pressure", "All of the above"],
-      correct: "All of the above"
-    }
-  ]
-};
+interface LessonSection {
+  id: string;
+  title: string;
+  content: string;
+  section_type: 'intro' | 'point' | 'conclusion';
+  order_index: number;
+}
+
+interface GeneratedContent {
+  generated_text: string;
+  generated_image_url: string;
+}
 
 const LessonScreen = () => {
+  const location = useLocation();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isQuizMode, setIsQuizMode] = useState(false);
@@ -48,6 +34,50 @@ const LessonScreen = () => {
   const [feedback, setFeedback] = useState('');
   const [isComplete, setIsComplete] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  
+  // Get lesson title from URL state
+  const lessonTitle = location.state?.title || "The Fall of Rome";
+
+  // Fetch lesson sections
+  const { data: sections, isLoading } = useQuery({
+    queryKey: ['lessonSections', lessonTitle],
+    queryFn: async () => {
+      const { data: lesson } = await supabase
+        .from('lessons')
+        .select('id')
+        .eq('title', lessonTitle)
+        .single();
+
+      if (!lesson) throw new Error('Lesson not found');
+
+      const { data } = await supabase
+        .from('lesson_sections')
+        .select('*, generated_content(*)')
+        .eq('lesson_id', lesson.id)
+        .order('order_index');
+
+      return data as (LessonSection & { generated_content: GeneratedContent[] })[];
+    }
+  });
+
+  // Generate content mutation
+  const generateContent = useMutation({
+    mutationFn: async (sectionId: string) => {
+      const { data, error } = await supabase.functions.invoke('generate-lesson-content', {
+        body: { sectionId },
+      });
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      toast.success('Generated new content for this section');
+    },
+    onError: (error) => {
+      console.error('Error generating content:', error);
+      toast.error('Failed to generate content');
+    }
+  });
 
   const playAudio = async (text: string) => {
     if (isMuted) return;
@@ -79,13 +109,18 @@ const LessonScreen = () => {
   };
 
   useEffect(() => {
-    if (currentSlide < SAMPLE_LESSON.slides.length && !isMuted) {
+    if (sections && sections.length > 0 && currentSlide < sections.length && !isMuted) {
       setIsSpeaking(true);
-      playAudio(SAMPLE_LESSON.slides[currentSlide].text).then(() => {
+      const currentSection = sections[currentSlide];
+      const textToSpeak = currentSection.generated_content?.length > 0 
+        ? currentSection.generated_content[0].generated_text 
+        : currentSection.content;
+      
+      playAudio(textToSpeak).then(() => {
         if (audioRef.current) {
           audioRef.current.onended = () => {
             setIsSpeaking(false);
-            if (currentSlide < SAMPLE_LESSON.slides.length - 1) {
+            if (currentSlide < sections.length - 1) {
               setCurrentSlide(prev => prev + 1);
             } else {
               startQuiz();
@@ -93,8 +128,13 @@ const LessonScreen = () => {
           };
         }
       });
+
+      // Generate content if it doesn't exist
+      if (!currentSection.generated_content?.length) {
+        generateContent.mutate(currentSection.id);
+      }
     }
-  }, [currentSlide, isMuted]);
+  }, [currentSlide, sections, isMuted]);
 
   useEffect(() => {
     if (audioRef.current) {
@@ -144,10 +184,18 @@ const LessonScreen = () => {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5 flex items-center justify-center">
+        <div className="animate-pulse">Loading lesson content...</div>
+      </div>
+    );
+  }
+
   const currentProgress = isQuizMode 
-    ? SAMPLE_LESSON.slides.length + currentQuiz + 1 
+    ? (sections?.length || 0) + currentQuiz + 1 
     : currentSlide + 1;
-  const totalSteps = SAMPLE_LESSON.slides.length + SAMPLE_LESSON.quiz.length;
+  const totalSteps = (sections?.length || 0) + (SAMPLE_LESSON.quiz?.length || 0);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5">
@@ -155,7 +203,7 @@ const LessonScreen = () => {
       <div className="max-w-4xl mx-auto relative min-h-screen p-2 sm:p-4 flex flex-col">
         <div className="py-2 animate-fade-in">
           <LessonHeader 
-            title={SAMPLE_LESSON.title}
+            title={lessonTitle}
             isMuted={isMuted}
             volume={volume}
             onMuteToggle={() => setIsMuted(!isMuted)}
@@ -180,10 +228,14 @@ const LessonScreen = () => {
           </div>
           
           <div className="flex-1 flex items-center justify-center p-4">
-            {!isQuizMode ? (
+            {!isQuizMode && sections && sections[currentSlide] ? (
               <SlideContent 
-                text={SAMPLE_LESSON.slides[currentSlide].text}
-                image={SAMPLE_LESSON.slides[currentSlide].image}
+                text={sections[currentSlide].generated_content?.length > 0 
+                  ? sections[currentSlide].generated_content[0].generated_text 
+                  : sections[currentSlide].content}
+                image={sections[currentSlide].generated_content?.length > 0 
+                  ? sections[currentSlide].generated_content[0].generated_image_url 
+                  : undefined}
               />
             ) : (
               <QuizContent 

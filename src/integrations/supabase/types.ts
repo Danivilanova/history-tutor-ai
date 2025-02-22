@@ -9,7 +9,103 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      generated_content: {
+        Row: {
+          created_at: string | null
+          generated_image_url: string
+          generated_text: string
+          id: string
+          prompt: string
+          section_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          generated_image_url: string
+          generated_text: string
+          id?: string
+          prompt: string
+          section_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          generated_image_url?: string
+          generated_text?: string
+          id?: string
+          prompt?: string
+          section_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "generated_content_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lesson_sections: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          lesson_id: string | null
+          order_index: number
+          section_type: Database["public"]["Enums"]["lesson_section_type"]
+          title: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          lesson_id?: string | null
+          order_index: number
+          section_type: Database["public"]["Enums"]["lesson_section_type"]
+          title: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          lesson_id?: string | null
+          order_index?: number
+          section_type?: Database["public"]["Enums"]["lesson_section_type"]
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_sections_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lessons: {
+        Row: {
+          background_image: string | null
+          created_at: string | null
+          difficulty: string
+          id: string
+          title: string
+        }
+        Insert: {
+          background_image?: string | null
+          created_at?: string | null
+          difficulty: string
+          id?: string
+          title: string
+        }
+        Update: {
+          background_image?: string | null
+          created_at?: string | null
+          difficulty?: string
+          id?: string
+          title?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +114,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      lesson_section_type: "intro" | "point" | "conclusion"
     }
     CompositeTypes: {
       [_ in never]: never
