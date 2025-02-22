@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Card } from "@/components/ui/card";
@@ -145,22 +146,40 @@ const LessonScreen = () => {
     }
   });
 
+  const startConversation = async () => {
+    try {
+      // Request microphone access first
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+      
+      // Get signed URL from our edge function
+      const { data, error } = await supabase.functions.invoke('get-signed-url', {
+        body: { agentId: selectedAgent.id }
+      });
+
+      if (error) throw error;
+
+      // Start the conversation with the signed URL
+      const conversationId = await conversation.startSession({
+        url: data.signedUrl
+      });
+
+      console.log('Started conversation:', conversationId);
+      setIsSpeaking(true);
+      conversation.setVolume({ volume });
+    } catch (error) {
+      console.error('Failed to start conversation:', error);
+      toast.error('Failed to start voice interaction');
+    }
+  };
+
   useEffect(() => {
     if (sections && sections.length > 0 && currentSlide < sections.length && !isMuted) {
-      setIsSpeaking(true);
       const currentSection = sections[currentSlide];
       const textToSpeak = currentSection.generated_content?.length > 0 
         ? currentSection.generated_content[0].generated_text 
         : currentSection.content;
 
-      conversation.startSession({
-        agentId: selectedAgent.id
-      }).then(() => {
-        conversation.setVolume({ volume });
-      }).catch((error) => {
-        console.error("Failed to start conversation:", error);
-        toast.error("Failed to start voice interaction");
-      });
+      startConversation();
 
       if (!currentSection.generated_content?.length) {
         generateContent.mutate(currentSection.id);
@@ -178,13 +197,9 @@ const LessonScreen = () => {
 
   const startQuiz = () => {
     setIsQuizMode(true);
-    setIsSpeaking(true);
     setCurrentQuiz(0);
     if (!isMuted) {
-      conversation.startSession({
-        agentId: selectedAgent.id
-      }).then(() => {
-      }).catch(console.error);
+      startConversation();
     }
   };
 
@@ -195,10 +210,7 @@ const LessonScreen = () => {
     setFeedback(isCorrect ? "Correct!" : "Not quite. Let's try the next one.");
     
     if (!isMuted) {
-      conversation.startSession({
-        agentId: selectedAgent.id
-      }).then(() => {
-      }).catch(console.error);
+      startConversation();
     }
     
     setTimeout(() => {
