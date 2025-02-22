@@ -1,9 +1,9 @@
-
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Card } from "@/components/ui/card";
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useLocation } from 'react-router-dom';
+import { useConversation } from '@11labs/react';
 import SpeakingIndicator from '@/components/SpeakingIndicator';
 import LessonHeader from '@/components/lesson/LessonHeader';
 import SlideContent from '@/components/lesson/SlideContent';
@@ -23,7 +23,6 @@ interface GeneratedContent {
   generated_image_url: string;
 }
 
-// Mock quiz data - this would ideally come from the database in a real implementation
 const QUIZ_DATA = {
   quiz: [
     {
@@ -54,12 +53,38 @@ const LessonScreen = () => {
   const [volume, setVolume] = useState(0.5);
   const [feedback, setFeedback] = useState('');
   const [isComplete, setIsComplete] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   
-  // Get lesson title from URL state
+  const conversation = useConversation({
+    overrides: {
+      agent: {
+        prompt: {
+          prompt: "You are a friendly and knowledgeable tutor. You teach history in an engaging way, making complex topics easy to understand. You are patient and encouraging.",
+        },
+        firstMessage: "Hello! I'll be your history tutor today. Let's explore this fascinating topic together.",
+        language: "en",
+      },
+      tts: {
+        voiceId: "EXAVITQu4vr4xnSDxMaL"
+      },
+    },
+    onConnect: () => {
+      console.log("Connected to ElevenLabs");
+    },
+    onDisconnect: () => {
+      console.log("Disconnected from ElevenLabs");
+      setIsSpeaking(false);
+    },
+    onMessage: (message) => {
+      console.log("Message from AI:", message);
+    },
+    onError: (error) => {
+      console.error("ElevenLabs error:", error);
+      toast.error("Error with voice interaction");
+    }
+  });
+
   const lessonTitle = location.state?.title || "The Fall of Rome";
 
-  // Fetch lesson sections
   const { data: sections, isLoading } = useQuery({
     queryKey: ['lessonSections', lessonTitle],
     queryFn: async () => {
@@ -81,7 +106,6 @@ const LessonScreen = () => {
     }
   });
 
-  // Generate content mutation
   const generateContent = useMutation({
     mutationFn: async (sectionId: string) => {
       const { data, error } = await supabase.functions.invoke('generate-lesson-content', {
@@ -100,35 +124,6 @@ const LessonScreen = () => {
     }
   });
 
-  const playAudio = async (text: string) => {
-    if (isMuted) return;
-    
-    try {
-      const { data, error } = await supabase.functions.invoke('text-to-speech', {
-        body: { text },
-      });
-
-      if (error) throw error;
-
-      if (data.audio) {
-        const audioBlob = new Blob(
-          [Uint8Array.from(atob(data.audio), c => c.charCodeAt(0))],
-          { type: 'audio/mpeg' }
-        );
-        const audioUrl = URL.createObjectURL(audioBlob);
-
-        if (audioRef.current) {
-          audioRef.current.src = audioUrl;
-          audioRef.current.volume = volume;
-          await audioRef.current.play();
-        }
-      }
-    } catch (error) {
-      console.error('Error playing audio:', error);
-      toast.error('Failed to play audio');
-    }
-  };
-
   useEffect(() => {
     if (sections && sections.length > 0 && currentSlide < sections.length && !isMuted) {
       setIsSpeaking(true);
@@ -136,31 +131,28 @@ const LessonScreen = () => {
       const textToSpeak = currentSection.generated_content?.length > 0 
         ? currentSection.generated_content[0].generated_text 
         : currentSection.content;
-      
-      playAudio(textToSpeak).then(() => {
-        if (audioRef.current) {
-          audioRef.current.onended = () => {
-            setIsSpeaking(false);
-            if (currentSlide < sections.length - 1) {
-              setCurrentSlide(prev => prev + 1);
-            } else {
-              startQuiz();
-            }
-          };
-        }
+
+      conversation.startSession({
+        agentId: "your_agent_id_here"
+      }).then(() => {
+        conversation.setVolume({ volume });
+      }).catch((error) => {
+        console.error("Failed to start conversation:", error);
+        toast.error("Failed to start voice interaction");
       });
 
-      // Generate content if it doesn't exist
       if (!currentSection.generated_content?.length) {
         generateContent.mutate(currentSection.id);
       }
     }
+
+    return () => {
+      conversation.endSession().catch(console.error);
+    };
   }, [currentSlide, sections, isMuted]);
 
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = volume;
-    }
+    conversation.setVolume({ volume });
   }, [volume]);
 
   const startQuiz = () => {
@@ -168,7 +160,10 @@ const LessonScreen = () => {
     setIsSpeaking(true);
     setCurrentQuiz(0);
     if (!isMuted) {
-      playAudio("Let's test your knowledge with a quiz.");
+      conversation.startSession({
+        agentId: "your_agent_id_here"
+      }).then(() => {
+      }).catch(console.error);
     }
   };
 
@@ -179,7 +174,10 @@ const LessonScreen = () => {
     setFeedback(isCorrect ? "Correct!" : "Not quite. Let's try the next one.");
     
     if (!isMuted) {
-      playAudio(isCorrect ? "Correct! Well done!" : "Not quite. Let's try the next one.");
+      conversation.startSession({
+        agentId: "your_agent_id_here"
+      }).then(() => {
+      }).catch(console.error);
     }
     
     setTimeout(() => {
@@ -189,9 +187,6 @@ const LessonScreen = () => {
       } else {
         setIsComplete(true);
         toast.success("Congratulations! You've completed the lesson.");
-        if (!isMuted) {
-          playAudio("Congratulations! You've completed the lesson.");
-        }
       }
     }, 3000);
   };
@@ -203,6 +198,7 @@ const LessonScreen = () => {
     } else if (isMuted) {
       setIsMuted(false);
     }
+    conversation.setVolume({ volume: newVolume });
   };
 
   if (isLoading) {
