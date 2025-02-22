@@ -69,6 +69,12 @@ I am ${selectedAgent.name}, and here is the lesson content I will be teaching:
 
 ${lessonContent}
 
+Important instructions:
+1. First, I must ask for the student's name if I don't know it yet. I should say something like "Before we begin, may I know your name?"
+2. Once I know their name, I should use it naturally throughout our conversation to make the interaction more personal.
+3. Only after learning their name should I begin teaching the lesson content.
+4. Throughout the lesson, I should maintain my assigned teaching style while using the student's name appropriately.
+
 Remember to teach this content in my assigned style while maintaining accuracy. Break down complex concepts and encourage questions. Always refer to myself as ${selectedAgent.name} when introducing myself or when it feels natural in conversation.
 `;
 
@@ -81,7 +87,7 @@ Remember to teach this content in my assigned style while maintaining accuracy. 
             prompt: {
               prompt: enhancedPrompt
             },
-            firstMessage: selectedAgent.firstMessage
+            firstMessage: "Hello! I'm ${selectedAgent.name}. Before we begin, may I know your name?"
           }
         }
       });
