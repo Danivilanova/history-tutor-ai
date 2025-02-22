@@ -12,11 +12,11 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders })
   }
 
-  const falApiKey = Deno.env.get('FAL_AI_KEY')
+  const falKey = Deno.env.get('FAL_KEY')
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 
-  if (!falApiKey || !supabaseUrl || !supabaseKey) {
+  if (!falKey || !supabaseUrl || !supabaseKey) {
     return new Response(
       JSON.stringify({ error: 'Missing required environment variables' }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
@@ -43,7 +43,7 @@ serve(async (req) => {
     const response = await fetch('https://fal.run/fal-ai/flux/dev', {
       method: 'POST',
       headers: {
-        'Authorization': `Key ${falApiKey}`,
+        'Authorization': `Key ${falKey}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
