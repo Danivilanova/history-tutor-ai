@@ -2,8 +2,9 @@
 import { Badge } from "@/components/ui/badge";
 import LessonCard from './LessonCard';
 import DynamicInput from './DynamicInput';
-import { predefinedLessons } from '../constants/tutor';
+import { useQuery } from '@tanstack/react-query';
 import { ArrowRight } from 'lucide-react';
+import { supabase } from "@/integrations/supabase/client";
 
 interface LessonSectionProps {
   selectedPersonality: string | null;
@@ -16,6 +17,19 @@ const LessonSection = ({
   onGenerateLesson,
   onStartLesson
 }: LessonSectionProps) => {
+  const { data: lessons, isLoading } = useQuery({
+    queryKey: ['lessons'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('lessons')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    }
+  });
+
   return (
     <div className="space-y-8 relative">
       {!selectedPersonality && (
@@ -45,15 +59,26 @@ const LessonSection = ({
           <h2 className="text-xl sm:text-2xl font-semibold">Choose from Featured Lessons</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          {predefinedLessons.map((lesson) => (
-            <LessonCard
-              key={lesson.id}
-              title={lesson.title}
-              difficulty={lesson.difficulty}
-              onStart={() => onStartLesson(lesson.title)}
-              backgroundImage={lesson.backgroundImage}
-            />
-          ))}
+          {isLoading ? (
+            // Loading state with skeleton cards
+            Array.from({ length: 4 }).map((_, index) => (
+              <div key={index} className="animate-pulse bg-primary/5 rounded-lg h-[240px]" />
+            ))
+          ) : lessons && lessons.length > 0 ? (
+            lessons.map((lesson) => (
+              <LessonCard
+                key={lesson.id}
+                title={lesson.title}
+                difficulty={lesson.difficulty}
+                onStart={() => onStartLesson(lesson.title)}
+                backgroundImage={lesson.background_image || undefined}
+              />
+            ))
+          ) : (
+            <div className="col-span-full text-center text-muted-foreground">
+              No lessons available
+            </div>
+          )}
         </div>
       </div>
     </div>
