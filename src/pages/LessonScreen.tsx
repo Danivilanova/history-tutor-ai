@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Card } from "@/components/ui/card";
@@ -74,8 +73,10 @@ async function requestMicrophonePermission() {
 
 async function getSignedUrl(agentId: string): Promise<string> {
   const { data, error } = await supabase.functions.invoke('get-signed-url', {
-    body: { agentId }
+    method: 'GET',
+    queryParams: { agentId }
   });
+  
   if (error) {
     console.error('Error getting signed URL:', error);
     throw new Error('Failed to get signed URL');
@@ -140,45 +141,14 @@ const LessonScreen = () => {
     }
   });
 
-  // Commenting out the generate content mutation for now
-  /*const generateContent = useMutation({
-    mutationFn: async (sectionId: string) => {
-      const { data, error } = await supabase.functions.invoke('generate-lesson-content', {
-        body: { sectionId },
-      });
-      
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      toast.success('Generated new content for this section');
-    },
-    onError: (error) => {
-      console.error('Error generating content:', error);
-      toast.error('Failed to generate content');
-    }
-  });*/
-
-  async function requestMicrophonePermission() {
-    try {
-      await navigator.mediaDevices.getUserMedia({ audio: true })
-      return true
-    } catch {
-      console.error('Microphone permission denied')
-      return false
-    }
-  }
-
   const startConversation = async () => {
     try {
-      // Request microphone access first
       const hasPermission = await requestMicrophonePermission()
       if (!hasPermission) {
         toast.error("Microphone permission is required for voice interaction");
         return;
       }
 
-      // Get signed URL from our edge function
       const { data, error } = await supabase.functions.invoke('get-signed-url', {
         body: { agentId: selectedAgent.id }
       });
@@ -192,7 +162,6 @@ const LessonScreen = () => {
         throw new Error('No signed URL received');
       }
 
-      // Start the conversation with the signed URL
       const conversationId = await conversation.startSession({
         signedUrl: data.signedUrl,
         overrides: {
@@ -229,16 +198,14 @@ const LessonScreen = () => {
     let mounted = true;
 
     if (sections && sections.length > 0 && currentSlide < sections.length && !isMuted) {
-      // Start conversation when component mounts or slide changes
       startConversation();
     }
 
     return () => {
       mounted = false;
-      // Only end conversation when component unmounts
       endConversation();
     };
-  }, [currentSlide, sections]); // Remove isMuted from dependencies
+  }, [currentSlide, sections]);
 
   useEffect(() => {
     if (conversation) {
@@ -246,7 +213,6 @@ const LessonScreen = () => {
     }
   }, [volume]);
 
-  // Modify mute handling
   useEffect(() => {
     if (isMuted) {
       endConversation();

@@ -16,7 +16,9 @@ serve(async (req) => {
   }
 
   try {
-    const { agentId } = await req.json();
+    // Get the agentId from URL parameters instead of body
+    const url = new URL(req.url);
+    const agentId = url.searchParams.get('agentId');
 
     if (!agentId) {
       return new Response(
@@ -24,6 +26,8 @@ serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    console.log('Requesting signed URL for agent:', agentId);
 
     const requestHeaders = new Headers();
     requestHeaders.set("xi-api-key", ELEVEN_LABS_API_KEY);
@@ -37,10 +41,13 @@ serve(async (req) => {
     );
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('ElevenLabs API error:', errorText);
       throw new Error(`ElevenLabs API error: ${response.statusText}`);
     }
 
     const data = await response.json();
+    console.log('Successfully got signed URL');
 
     return new Response(
       JSON.stringify({ signedUrl: data.signed_url }),
