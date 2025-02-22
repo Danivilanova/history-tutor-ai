@@ -1,3 +1,4 @@
+
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useQuery } from '@tanstack/react-query';
@@ -79,10 +80,11 @@ const LessonScreen = () => {
     handleQuizAnswer,
   } = useLesson(selectedAgent, sections?.sections);
 
+  // Calculate progress based on whether we're in quiz mode or normal mode
   const currentProgress = isQuizMode
-    ? (sections?.sections.length || 0) + currentQuiz + 1
-    : currentSlide + 1;
-  const totalSteps = (sections?.sections.length || 0) + (quizQuestions?.length || 0);
+    ? (sections?.sections?.length || 0) + (currentQuiz || 0)
+    : 1; // Since we're now using a single slide view, progress is always 1 during the lesson
+  const totalSteps = (sections?.sections?.length || 0) + (quizQuestions?.length || 0);
 
   if (isLoading) {
     return (
@@ -100,7 +102,7 @@ const LessonScreen = () => {
             title={lessonTitle}
             isMuted={isMuted}
             volume={volume}
-            onMuteToggle={() => handleVolumeChange(isMuted ? volume : 0)}
+            onMuteToggle={() => handleVolumeChange(isMuted ? 0.5 : 0)}
             onVolumeChange={handleVolumeChange}
           />
 

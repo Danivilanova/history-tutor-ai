@@ -37,6 +37,9 @@ serve(async (req) => {
 
     console.log('Generating image for description:', image_description)
 
+    // Ensure the image description is properly formatted and not too long
+    const sanitizedPrompt = image_description.slice(0, 500).trim()
+
     const response = await fetch('https://fal.run/fal-ai/flux/dev', {
       method: 'POST',
       headers: {
@@ -45,16 +48,18 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         input: {
-          prompt: image_description,
+          prompt: sanitizedPrompt,
           seed: Math.floor(Math.random() * 1000000),
-          image_size: "landscape_4_3",
+          image_size: "landscape_16_9",
           num_images: 1,
         }
       })
     })
 
     if (!response.ok) {
-      throw new Error(`FAL AI API error: ${response.statusText}`)
+      const errorText = await response.text()
+      console.error('FAL AI API error:', errorText)
+      throw new Error(`FAL AI API error: ${response.statusText} - ${errorText}`)
     }
 
     const result = await response.json()
