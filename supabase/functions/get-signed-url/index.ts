@@ -12,7 +12,7 @@ const corsHeaders = {
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
@@ -22,7 +22,7 @@ serve(async (req) => {
 
     if (!agentId) {
       return new Response(
-        JSON.stringify({ error: 'Agent ID is required' }), 
+        JSON.stringify({ error: 'Agent ID is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }

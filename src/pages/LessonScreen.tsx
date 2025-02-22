@@ -72,11 +72,10 @@ async function requestMicrophonePermission() {
 }
 
 async function getSignedUrl(agentId: string): Promise<string> {
-  const { data, error } = await supabase.functions.invoke('get-signed-url', {
+  const { data, error } = await supabase.functions.invoke(`get-signed-url?agentId=${agentId}`, {
     method: 'GET',
-    query: { agentId }
   });
-  
+
   if (error) {
     console.error('Error getting signed URL:', error);
     throw new Error('Failed to get signed URL');
@@ -231,14 +230,14 @@ const LessonScreen = () => {
 
   const handleQuizAnswer = (answer: string) => {
     if (currentQuiz >= QUIZ_DATA.quiz.length) return;
-    
+
     const isCorrect = answer === QUIZ_DATA.quiz[currentQuiz].correct;
     setFeedback(isCorrect ? "Correct!" : "Not quite. Let's try the next one.");
-    
+
     if (!isMuted) {
       startConversation();
     }
-    
+
     setTimeout(() => {
       setFeedback('');
       if (currentQuiz < QUIZ_DATA.quiz.length - 1) {
@@ -268,8 +267,8 @@ const LessonScreen = () => {
     );
   }
 
-  const currentProgress = isQuizMode 
-    ? (sections?.length || 0) + currentQuiz + 1 
+  const currentProgress = isQuizMode
+    ? (sections?.length || 0) + currentQuiz + 1
     : currentSlide + 1;
   const totalSteps = (sections?.length || 0) + QUIZ_DATA.quiz.length;
 
@@ -277,7 +276,7 @@ const LessonScreen = () => {
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5">
       <div className="max-w-4xl mx-auto relative min-h-screen p-2 sm:p-4 flex flex-col">
         <div className="py-2 animate-fade-in">
-          <LessonHeader 
+          <LessonHeader
             title={lessonTitle}
             isMuted={isMuted}
             volume={volume}
@@ -286,9 +285,9 @@ const LessonScreen = () => {
           />
 
           <div className="relative h-2 bg-muted rounded-full mb-4 overflow-hidden">
-            <div 
+            <div
               className="absolute left-0 top-0 h-full bg-primary transition-all duration-300 rounded-full"
-              style={{ 
+              style={{
                 width: `${(currentProgress / totalSteps) * 100}%`,
               }}
             />
@@ -297,23 +296,23 @@ const LessonScreen = () => {
 
         <Card className="flex-1 flex flex-col relative overflow-hidden backdrop-blur-sm bg-card/80 border-primary/10 animate-fade-in-scale mt-0">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/0 via-primary/20 to-primary/0" />
-          
+
           <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10">
             <SpeakingIndicator isActive={isSpeaking} />
           </div>
-          
+
           <div className="flex-1 flex items-center justify-center p-4">
             {!isQuizMode && sections && sections[currentSlide] ? (
-              <SlideContent 
-                text={sections[currentSlide].generated_content?.length > 0 
-                  ? sections[currentSlide].generated_content[0].generated_text 
+              <SlideContent
+                text={sections[currentSlide].generated_content?.length > 0
+                  ? sections[currentSlide].generated_content[0].generated_text
                   : sections[currentSlide].content}
-                image={sections[currentSlide].generated_content?.length > 0 
-                  ? sections[currentSlide].generated_content[0].generated_image_url 
+                image={sections[currentSlide].generated_content?.length > 0
+                  ? sections[currentSlide].generated_content[0].generated_image_url
                   : undefined}
               />
             ) : (
-              <QuizContent 
+              <QuizContent
                 isComplete={isComplete}
                 currentQuiz={currentQuiz}
                 quiz={QUIZ_DATA.quiz}
