@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Smile, Shield, Laugh } from 'lucide-react';
+import { Smile, Shield, Laugh, ArrowRight } from 'lucide-react';
 import LessonCard from '../components/LessonCard';
 import DynamicInput from '../components/DynamicInput';
 import { Badge } from "@/components/ui/badge";
@@ -96,7 +96,7 @@ const Index = () => {
           <Badge variant="secondary" className="mb-4 bg-primary/10 text-primary hover:bg-primary/20 animate-float">
             Welcome to History Tutor AI
           </Badge>
-          <h1 className="text-4xl sm:text-5xl font-bold mb-4">
+          <h1 className="text-4xl sm:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/50">
             Explore the Past, Your Way
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -105,8 +105,13 @@ const Index = () => {
           </p>
         </div>
 
-        <div className="mb-16">
-          <h2 className="text-2xl font-semibold mb-6">Choose Your Tutor's Personality</h2>
+        <div className="mb-16 rounded-xl bg-gradient-to-b from-primary/5 to-background p-8 border animate-fade-in">
+          <div className="flex items-center gap-2 mb-6">
+            <Badge variant="secondary" className="bg-primary/10 text-primary">
+              Step 1
+            </Badge>
+            <h2 className="text-2xl font-semibold">Choose Your Tutor's Personality</h2>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             {tutorPersonalities.map((personality) => (
               <TutorPersonalityCard
@@ -127,11 +132,40 @@ const Index = () => {
         </div>
 
         <div className="mb-16">
-          <DynamicInput onGenerate={handleGenerateLesson} />
+          <div className="flex items-center gap-2 mb-6">
+            <Badge variant="secondary" className="bg-primary/10 text-primary">
+              Step 2
+            </Badge>
+            <h2 className="text-2xl font-semibold">Choose Your Learning Path</h2>
+          </div>
+          <div className="relative">
+            {!selectedPersonality && (
+              <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-xl">
+                <div className="text-center p-6">
+                  <p className="text-lg font-medium mb-2">Select a tutor personality first</p>
+                  <ArrowRight className="h-6 w-6 mx-auto text-primary animate-bounce" />
+                </div>
+              </div>
+            )}
+            <DynamicInput onGenerate={handleGenerateLesson} />
+          </div>
         </div>
 
-        <div className="mb-8">
-          <h2 className="text-2xl font-semibold mb-8">Featured Lessons</h2>
+        <div className="relative mb-8">
+          <div className="flex items-center gap-2 mb-8">
+            <Badge variant="secondary" className="bg-primary/10 text-primary">
+              Or
+            </Badge>
+            <h2 className="text-2xl font-semibold">Choose from Featured Lessons</h2>
+          </div>
+          {!selectedPersonality && (
+            <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-xl">
+              <div className="text-center p-6">
+                <p className="text-lg font-medium mb-2">Select a tutor personality first</p>
+                <ArrowRight className="h-6 w-6 mx-auto text-primary animate-bounce" />
+              </div>
+            </div>
+          )}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {predefinedLessons.map((lesson) => (
               <LessonCard
