@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Card } from "@/components/ui/card";
@@ -91,7 +92,7 @@ const LessonScreen = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5 p-4">
-      <div className="max-w-4xl mx-auto relative">
+      <div className="max-w-4xl mx-auto relative h-[calc(100vh-2rem)] flex flex-col">
         <LessonHeader 
           title={SAMPLE_LESSON.title}
           isMuted={isMuted}
@@ -103,7 +104,7 @@ const LessonScreen = () => {
           total={totalSteps} 
         />
 
-        <Card className="p-8 mb-4 min-h-[400px] flex flex-col items-center justify-center relative">
+        <Card className="p-8 flex-1 flex flex-col items-center justify-center relative">
           <div className="absolute top-4 left-1/2 -translate-x-1/2">
             <SpeakingIndicator isActive={isSpeaking} />
           </div>
