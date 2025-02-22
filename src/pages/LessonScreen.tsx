@@ -111,12 +111,11 @@ const LessonScreen = () => {
     if (!isQuizMode) {
       return (
         <>
-          <div className="text-center mb-8 animate-fade-in">
-            <SpeakingIndicator isActive={isSpeaking} />
+          <div className="w-full text-center animate-fade-in">
             <p className="text-xl mt-4">{SAMPLE_LESSON.slides[currentSlide].text}</p>
           </div>
           {SAMPLE_LESSON.slides[currentSlide].image && (
-            <div className="w-full max-w-2xl h-64 rounded-lg overflow-hidden animate-fade-in">
+            <div className="w-full max-w-2xl h-64 rounded-lg overflow-hidden animate-fade-in mt-8">
               <img 
                 src={SAMPLE_LESSON.slides[currentSlide].image} 
                 alt="Lesson illustration"
@@ -140,7 +139,6 @@ const LessonScreen = () => {
     if (currentQuiz < SAMPLE_LESSON.quiz.length) {
       return (
         <div className="text-center animate-fade-in">
-          <SpeakingIndicator isActive={isSpeaking} />
           <h3 className="text-xl mb-6">{SAMPLE_LESSON.quiz[currentQuiz].question}</h3>
           <div className="flex gap-4 justify-center">
             {SAMPLE_LESSON.quiz[currentQuiz].options.map((option, index) => (
@@ -192,6 +190,9 @@ const LessonScreen = () => {
         />
 
         <Card className="p-8 mb-4 min-h-[400px] flex flex-col items-center justify-center relative">
+          <div className="absolute top-4 left-1/2 -translate-x-1/2">
+            <SpeakingIndicator isActive={isSpeaking} />
+          </div>
           {renderContent()}
         </Card>
 
