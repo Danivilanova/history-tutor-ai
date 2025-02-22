@@ -183,19 +183,6 @@ const LessonScreen = () => {
   };
 
   useEffect(() => {
-    let mounted = true;
-
-    if (sections && sections.length > 0 && currentSlide < sections.length && !isMuted) {
-      startConversation();
-    }
-
-    return () => {
-      mounted = false;
-      endConversation();
-    };
-  }, [currentSlide, sections]);
-
-  useEffect(() => {
     if (conversation) {
       conversation.setVolume({ volume });
     }
@@ -204,7 +191,7 @@ const LessonScreen = () => {
   useEffect(() => {
     if (isMuted) {
       endConversation();
-    } else if (sections && sections.length > 0 && currentSlide < sections.length) {
+    } else {
       startConversation();
     }
   }, [isMuted]);
