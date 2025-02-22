@@ -9,26 +9,25 @@ const SpeakingIndicator: FC<SpeakingIndicatorProps> = ({ isActive }) => {
   if (!isActive) return null;
   
   return (
-    <div className="flex items-center justify-center gap-0.5 h-8">
-      {[...Array(12)].map((_, i) => (
-        <div
-          key={i}
-          className="w-0.5 bg-primary rounded-full transition-all duration-200"
+    <div className="flex items-center justify-center h-8">
+      <div className="relative w-8 h-8">
+        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-primary via-primary/50 to-primary animate-pulse" />
+        <div 
+          className="absolute inset-0 rounded-full bg-gradient-to-r from-primary/20 via-primary/40 to-primary/20"
           style={{
-            height: `${Math.random() * 24 + 8}px`,
-            animationDelay: `${i * 0.1}s`,
-            animation: 'waveform 0.5s ease-in-out infinite'
+            animation: 'rotate 2s linear infinite'
           }}
         />
-      ))}
+        <div className="absolute inset-1 rounded-full bg-background" />
+      </div>
       <style>
         {`
-          @keyframes waveform {
-            0%, 100% {
-              transform: scaleY(0.5);
+          @keyframes rotate {
+            from {
+              transform: rotate(0deg);
             }
-            50% {
-              transform: scaleY(1);
+            to {
+              transform: rotate(360deg);
             }
           }
         `}
