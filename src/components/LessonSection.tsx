@@ -1,11 +1,13 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Send } from "lucide-react";
 import LessonCard from './LessonCard';
+import { supabase } from "@/integrations/supabase/client";
 
 interface LessonSectionProps {
   selectedPersonality: string | null;
@@ -21,23 +23,18 @@ const LessonSection = ({
   const [customTopic, setCustomTopic] = useState('');
   const navigate = useNavigate();
 
-  const defaultLessons = [
-    {
-      title: "The Fall of Rome",
-      description: "Explore the complex factors that led to the collapse of one of history's greatest empires.",
-      duration: "30 mins"
-    },
-    {
-      title: "Ancient Egyptian Pyramids",
-      description: "Discover the engineering marvels and mysteries behind these iconic structures.",
-      duration: "25 mins"
-    },
-    {
-      title: "The Renaissance",
-      description: "Learn about the cultural rebirth that transformed Europe and shaped modern thinking.",
-      duration: "35 mins"
+  const { data: lessons, isLoading } = useQuery({
+    queryKey: ['lessons'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('lessons')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data;
     }
-  ];
+  });
 
   const handleStartLesson = (title: string) => {
     onStartLesson(title);
@@ -71,13 +68,21 @@ const LessonSection = ({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8">
-        {defaultLessons.map((lesson) => (
-          <LessonCard
-            key={lesson.title}
-            {...lesson}
-            onStart={() => handleStartLesson(lesson.title)}
-          />
-        ))}
+        {isLoading ? (
+          <div className="col-span-3 text-center py-8">Loading lessons...</div>
+        ) : lessons && lessons.length > 0 ? (
+          lessons.map((lesson) => (
+            <LessonCard
+              key={lesson.id}
+              title={lesson.title}
+              difficulty={lesson.difficulty}
+              backgroundImage={lesson.background_image}
+              onStart={() => handleStartLesson(lesson.title)}
+            />
+          ))
+        ) : (
+          <div className="col-span-3 text-center py-8">No lessons available</div>
+        )}
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
