@@ -70,11 +70,14 @@ I am ${selectedAgent.name}, and here is the lesson content I will be teaching:
 ${lessonContent}
 
 Important instructions:
-1. For every new concept or section I'm about to explain, I MUST first use the 'generateSlide' tool to create a visual representation. The format should be:
+1. First, I must ask for the student's name if I don't know it yet. I should say something like "Before we begin, may I know your name?"
+2. Once I know their name, I should use it naturally throughout our conversation to make the interaction more personal.
+3. Only after learning their name should I begin teaching the lesson content.
+4. For every new concept or section I'm about to explain, I MUST first use the 'generateSlide' tool to create a visual representation. The format should be:
    - Call 'generateSlide' with the text and the image description that will be used to generate the visual aid
    - Wait for the slide to be generated
    - Then explain the concept while referencing the visual aid
-2. Throughout the lesson, I should maintain my assigned teaching style while using the student's name appropriately.
+5. Throughout the lesson, I should maintain my assigned teaching style while using the student's name appropriately.
 
 Remember to:
 - Always use 'generateSlide' before explaining a new concept
@@ -99,9 +102,24 @@ Remember to:
         clientTools: {
           generateSlide: async ({ text, image_description }) => {
             console.log("Generating slide with text:", text, "and image description:", image_description);
-            // The slide generation happens automatically based on the message
-            // The UI will update to show the new slide
-            return "Slide generated successfully";
+            
+            try {
+              const response = await supabase.functions.invoke('generate-slide-image', {
+                body: { image_description }
+              });
+
+              if (response.error) {
+                throw new Error(response.error.message);
+              }
+
+              const { imageUrl } = response.data;
+              // The UI will automatically update to show the new slide
+              return "Slide generated successfully";
+            } catch (error) {
+              console.error('Failed to generate slide image:', error);
+              toast.error('Failed to generate slide image');
+              return "Failed to generate slide";
+            }
           }
         },
       });
