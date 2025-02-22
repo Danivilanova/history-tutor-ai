@@ -87,7 +87,7 @@ Remember to teach this content in my assigned style while maintaining accuracy. 
             prompt: {
               prompt: enhancedPrompt
             },
-            firstMessage: "Hello! I'm ${selectedAgent.name}. Before we begin, may I know your name?"
+            firstMessage: selectedAgent.firstMessage
           }
         }
       });
