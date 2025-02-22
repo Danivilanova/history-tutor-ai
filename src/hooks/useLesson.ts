@@ -4,8 +4,13 @@ import { TutorAgent } from '@/types/lesson';
 import { useConversationHandler } from './useConversationHandler';
 import { useQuizHandler } from './useQuizHandler';
 
+interface CurrentSlide {
+  text: string;
+  imageUrl: string;
+}
+
 export function useLesson(selectedAgent: TutorAgent, sections?: any[]) {
-  const [currentSlide, setCurrentSlide] = useState(0);
+  const [currentSlide, setCurrentSlide] = useState<CurrentSlide | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [volume, setVolume] = useState(0.5);
@@ -32,7 +37,8 @@ export function useLesson(selectedAgent: TutorAgent, sections?: any[]) {
     sections,
     () => setIsConversationStarted(true),
     (speaking) => setIsSpeaking(speaking),
-    volume
+    volume,
+    (text, imageUrl) => setCurrentSlide({ text, imageUrl })
   );
 
   const handleVolumeChange = (newVolume: number) => {

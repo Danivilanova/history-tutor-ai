@@ -10,7 +10,8 @@ export function useConversationHandler(
   sections: any[] | undefined,
   onStart: () => void,
   onSpeakingChange: (speaking: boolean) => void,
-  volume: number
+  volume: number,
+  onSlideGenerated?: (text: string, imageUrl: string) => void
 ) {
   const conversation = useConversation({
     onConnect: () => {
@@ -97,23 +98,9 @@ Remember to:
                 throw new Error(response.error.message);
               }
 
-              // Store the text and image URL in the database for the current section
-              if (sections?.lessonId) {
-                const { error: dbError } = await supabase
-                  .from('lesson_sections')
-                  .upsert({
-                    lesson_id: sections.lessonId,
-                    content: text,
-                    generated_content: [{
-                      generated_text: text,
-                      generated_image_url: response.data.imageUrl
-                    }]
-                  });
-
-                if (dbError) {
-                  console.error('Failed to save slide content:', dbError);
-                  toast.error('Failed to save slide content');
-                }
+              // Notify the UI about the new slide content
+              if (onSlideGenerated) {
+                onSlideGenerated(text, response.data.imageUrl);
               }
 
               return `Generated slide with text: "${text}" and image: ${response.data.imageUrl}`;

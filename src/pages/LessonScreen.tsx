@@ -1,4 +1,3 @@
-
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useQuery } from '@tanstack/react-query';
@@ -139,14 +138,10 @@ const LessonScreen = () => {
             </div>
 
             <div className="flex-1 flex items-center justify-center p-4">
-              {!isQuizMode && sections?.sections && sections.sections[currentSlide] ? (
+              {!isQuizMode && currentSlide ? (
                 <SlideContent
-                  text={sections.sections[currentSlide].generated_content?.length > 0
-                    ? sections.sections[currentSlide].generated_content[0].generated_text
-                    : sections.sections[currentSlide].content}
-                  image={sections.sections[currentSlide].generated_content?.length > 0
-                    ? sections.sections[currentSlide].generated_content[0].generated_image_url
-                    : undefined}
+                  text={currentSlide.text}
+                  image={currentSlide.imageUrl}
                 />
               ) : (
                 <QuizContent
