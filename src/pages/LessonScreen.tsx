@@ -172,7 +172,15 @@ const LessonScreen = () => {
 
       // Start the conversation with the signed URL
       const conversationId = await conversation.startSession({
-        url: signedUrl
+        signedUrl: signedUrl,
+        overrides: {
+          agent: {
+            prompt: {
+              prompt: selectedAgent.prompt
+            },
+            firstMessage: selectedAgent.firstMessage
+          }
+        }
       });
 
       console.log('Started conversation:', conversationId);
