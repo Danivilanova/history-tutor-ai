@@ -6,7 +6,6 @@ import LessonCard from '../components/LessonCard';
 import DynamicInput from '../components/DynamicInput';
 import { Badge } from "@/components/ui/badge";
 import TutorPersonalityCard from '../components/TutorPersonalityCard';
-import { supabase } from "@/integrations/supabase/client";
 
 const predefinedLessons = [
   { 
@@ -42,8 +41,7 @@ const tutorPersonalities = [
     description: 'Warm and encouraging, perfect for a supportive learning experience',
     icon: <Smile className="h-6 w-6 text-primary" />,
     color: '#6B4EFF',
-    previewText: "Hi! I'm excited to help you learn history in a fun and supportive way!",
-    voiceId: 'EXAVITQu4vr4xnSDxMaL' // Sarah voice
+    audioSample: '/friendly_sample.mp3'
   },
   {
     id: 'strict',
@@ -51,8 +49,7 @@ const tutorPersonalities = [
     description: 'Focused and disciplined, ideal for structured learning',
     icon: <Shield className="h-6 w-6 text-primary" />,
     color: '#1A1F2C',
-    previewText: "Welcome. Let's maintain focus and achieve our learning objectives efficiently.",
-    voiceId: 'onwK4e9ZLuTAKqWW03F9' // Daniel voice
+    audioSample: '/strict_sample.mp3'
   },
   {
     id: 'funny',
@@ -60,14 +57,14 @@ const tutorPersonalities = [
     description: 'Light-hearted and engaging, making learning fun and memorable',
     icon: <Laugh className="h-6 w-6 text-primary" />,
     color: '#F97316',
-    previewText: "Hey there! Ready to make history fun? Let's dive in with a smile!",
-    voiceId: 'IKne3meq5aSn9XLyUdCD' // Charlie voice
+    audioSample: '/funny_sample.mp3'
   }
 ];
 
 const Index = () => {
   const [selectedPersonality, setSelectedPersonality] = useState<string | null>(null);
   const [isPlayingPreview, setIsPlayingPreview] = useState<string | null>(null);
+  const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
 
   const handleStartLesson = (title: string) => {
     if (!selectedPersonality) {
@@ -90,38 +87,44 @@ const Index = () => {
   };
 
   const handlePreviewVoice = async (personality: typeof tutorPersonalities[0]) => {
-    if (isPlayingPreview === personality.id) {
-      return;
-    }
-
-    setIsPlayingPreview(personality.id);
     try {
-      const { data, error } = await supabase.functions.invoke('text-to-speech', {
-        body: { 
-          text: personality.previewText,
-          voiceId: personality.voiceId
-        },
-      });
-
-      if (error) throw error;
-
-      if (data.audio) {
-        const audioBlob = new Blob(
-          [Uint8Array.from(atob(data.audio), c => c.charCodeAt(0))],
-          { type: 'audio/mpeg' }
-        );
-        const audio = new Audio(URL.createObjectURL(audioBlob));
-        
-        audio.onended = () => {
-          setIsPlayingPreview(null);
-        };
-        
-        await audio.play();
+      // Stop any currently playing audio
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+        setIsPlayingPreview(null);
       }
+
+      // If clicking the same audio that's playing, just stop it
+      if (isPlayingPreview === personality.id) {
+        setIsPlayingPreview(null);
+        setCurrentAudio(null);
+        return;
+      }
+
+      // Create and play new audio
+      const audio = new Audio(personality.audioSample);
+      setCurrentAudio(audio);
+      setIsPlayingPreview(personality.id);
+
+      audio.onended = () => {
+        setIsPlayingPreview(null);
+        setCurrentAudio(null);
+      };
+
+      audio.onerror = () => {
+        console.error('Error playing audio:', audio.error);
+        toast.error('Failed to play voice preview');
+        setIsPlayingPreview(null);
+        setCurrentAudio(null);
+      };
+
+      await audio.play();
     } catch (error) {
       console.error('Error playing preview:', error);
       toast.error('Failed to play voice preview');
       setIsPlayingPreview(null);
+      setCurrentAudio(null);
     }
   };
 
