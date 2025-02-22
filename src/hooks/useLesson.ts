@@ -3,8 +3,8 @@ import { useState } from 'react';
 import { useConversation } from '@11labs/react';
 import { toast } from 'sonner';
 import { getSignedUrl, requestMicrophonePermission } from '@/utils/lessonUtils';
-import { TutorAgent } from '@/types/lesson';
-import { QUIZ_DATA } from '@/constants/lesson';
+import { TutorAgent, QuizQuestion } from '@/types/lesson';
+import { supabase } from '@/integrations/supabase/client';
 
 export function useLesson(selectedAgent: TutorAgent, sections?: any[]) {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -16,6 +16,7 @@ export function useLesson(selectedAgent: TutorAgent, sections?: any[]) {
   const [feedback, setFeedback] = useState('');
   const [isComplete, setIsComplete] = useState(false);
   const [isConversationStarted, setIsConversationStarted] = useState(false);
+  const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
 
   const conversation = useConversation({
     onConnect: () => {
@@ -69,12 +70,7 @@ Remember to teach this content in my assigned style while maintaining accuracy. 
             },
             firstMessage: selectedAgent.firstMessage
           }
-        },
-        clientTools: {
-          generateSlide: async ({ message }) => {
-            console.log(message);
-          }
-        },
+        }
       });
 
       setIsConversationStarted(true);
@@ -98,20 +94,34 @@ Remember to teach this content in my assigned style while maintaining accuracy. 
     }
   };
 
-  const startQuiz = () => {
-    setIsQuizMode(true);
-    setCurrentQuiz(0);
+  const startQuiz = async (lessonId: string) => {
+    try {
+      const { data: questions, error } = await supabase
+        .from('quiz_questions')
+        .select('*')
+        .eq('lesson_id', lessonId)
+        .order('order_index');
+
+      if (error) throw error;
+
+      setQuizQuestions(questions as QuizQuestion[]);
+      setIsQuizMode(true);
+      setCurrentQuiz(0);
+    } catch (error) {
+      console.error('Failed to fetch quiz questions:', error);
+      toast.error('Failed to load quiz questions');
+    }
   };
 
   const handleQuizAnswer = (answer: string) => {
-    if (currentQuiz >= QUIZ_DATA.quiz.length) return;
+    if (currentQuiz >= quizQuestions.length) return;
 
-    const isCorrect = answer === QUIZ_DATA.quiz[currentQuiz].correct;
+    const isCorrect = answer === quizQuestions[currentQuiz].correct_answer;
     setFeedback(isCorrect ? "Correct!" : "Not quite. Let's try the next one.");
 
     setTimeout(() => {
       setFeedback('');
-      if (currentQuiz < QUIZ_DATA.quiz.length - 1) {
+      if (currentQuiz < quizQuestions.length - 1) {
         setCurrentQuiz(prev => prev + 1);
       } else {
         setIsComplete(true);
@@ -131,6 +141,7 @@ Remember to teach this content in my assigned style while maintaining accuracy. 
     feedback,
     isComplete,
     isConversationStarted,
+    quizQuestions,
     startConversation,
     handleVolumeChange,
     startQuiz,

@@ -1,3 +1,4 @@
+
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useQuery } from '@tanstack/react-query';
@@ -8,7 +9,7 @@ import SlideContent from '@/components/lesson/SlideContent';
 import QuizContent from '@/components/lesson/QuizContent';
 import { supabase } from "@/integrations/supabase/client";
 import { useLesson } from '@/hooks/useLesson';
-import { TUTOR_AGENTS, QUIZ_DATA } from '@/constants/lesson';
+import { TUTOR_AGENTS } from '@/constants/lesson';
 import type { LessonSection, GeneratedContent } from '@/types/lesson';
 
 const LessonScreen = () => {
@@ -34,7 +35,10 @@ const LessonScreen = () => {
         .eq('lesson_id', lesson.id)
         .order('order_index');
 
-      return data as (LessonSection & { generated_content: GeneratedContent[] })[];
+      return {
+        lessonId: lesson.id,
+        sections: data as (LessonSection & { generated_content: GeneratedContent[] })[]
+      };
     }
   });
 
@@ -48,10 +52,17 @@ const LessonScreen = () => {
     feedback,
     isComplete,
     isConversationStarted,
+    quizQuestions,
     startConversation,
     handleVolumeChange,
+    startQuiz,
     handleQuizAnswer,
-  } = useLesson(selectedAgent, sections);
+  } = useLesson(selectedAgent, sections?.sections);
+
+  const currentProgress = isQuizMode
+    ? (sections?.sections.length || 0) + currentQuiz + 1
+    : currentSlide + 1;
+  const totalSteps = (sections?.sections.length || 0) + (quizQuestions?.length || 0);
 
   if (isLoading) {
     return (
@@ -60,11 +71,6 @@ const LessonScreen = () => {
       </div>
     );
   }
-
-  const currentProgress = isQuizMode
-    ? (sections?.length || 0) + currentQuiz + 1
-    : currentSlide + 1;
-  const totalSteps = (sections?.length || 0) + QUIZ_DATA.quiz.length;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5">
@@ -91,7 +97,12 @@ const LessonScreen = () => {
         {!isConversationStarted ? (
           <div className="flex-1 flex items-center justify-center">
             <Button 
-              onClick={startConversation}
+              onClick={() => {
+                startConversation();
+                if (sections?.lessonId) {
+                  startQuiz(sections.lessonId);
+                }
+              }}
               size="lg"
               className="animate-pulse"
             >
@@ -107,20 +118,20 @@ const LessonScreen = () => {
             </div>
 
             <div className="flex-1 flex items-center justify-center p-4">
-              {!isQuizMode && sections && sections[currentSlide] ? (
+              {!isQuizMode && sections?.sections && sections.sections[currentSlide] ? (
                 <SlideContent
-                  text={sections[currentSlide].generated_content?.length > 0
-                    ? sections[currentSlide].generated_content[0].generated_text
-                    : sections[currentSlide].content}
-                  image={sections[currentSlide].generated_content?.length > 0
-                    ? sections[currentSlide].generated_content[0].generated_image_url
+                  text={sections.sections[currentSlide].generated_content?.length > 0
+                    ? sections.sections[currentSlide].generated_content[0].generated_text
+                    : sections.sections[currentSlide].content}
+                  image={sections.sections[currentSlide].generated_content?.length > 0
+                    ? sections.sections[currentSlide].generated_content[0].generated_image_url
                     : undefined}
                 />
               ) : (
                 <QuizContent
                   isComplete={isComplete}
                   currentQuiz={currentQuiz}
-                  quiz={QUIZ_DATA.quiz}
+                  quiz={quizQuestions}
                   feedback={feedback}
                   onAnswerSubmit={handleQuizAnswer}
                 />

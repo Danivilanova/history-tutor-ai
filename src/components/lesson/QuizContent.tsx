@@ -4,15 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import { Check, X } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { QuizQuestion } from '@/types/lesson';
 
 interface QuizContentProps {
   isComplete: boolean;
   currentQuiz: number;
-  quiz: Array<{
-    question: string;
-    options: string[];
-    correct: string;
-  }>;
+  quiz: QuizQuestion[];
   feedback: string;
   onAnswerSubmit: (answer: string) => void;
 }
@@ -37,14 +34,25 @@ const QuizContent: FC<QuizContentProps> = ({
 
   if (currentQuiz < quiz.length) {
     const isCorrectFeedback = feedback === "Correct!";
+    const currentQuestion = quiz[currentQuiz];
     
     return (
       <div className="text-center animate-fade-in">
-        <h3 className="text-xl mb-6">{quiz[currentQuiz].question}</h3>
-        <div className="flex gap-4 justify-center">
-          {quiz[currentQuiz].options.map((option, index) => {
-            const isSelectedOption = feedback && option === quiz[currentQuiz].correct;
-            const isIncorrectSelected = feedback && option !== quiz[currentQuiz].correct;
+        <div className="mb-2">
+          <span className={cn(
+            "inline-block px-2 py-1 rounded text-sm",
+            currentQuestion.difficulty === 'easy' && "bg-green-100 text-green-800",
+            currentQuestion.difficulty === 'medium' && "bg-yellow-100 text-yellow-800",
+            currentQuestion.difficulty === 'hard' && "bg-red-100 text-red-800"
+          )}>
+            {currentQuestion.difficulty.charAt(0).toUpperCase() + currentQuestion.difficulty.slice(1)}
+          </span>
+        </div>
+        <h3 className="text-xl mb-6">{currentQuestion.question}</h3>
+        <div className="flex flex-col gap-4 items-center max-w-xl mx-auto">
+          {currentQuestion.options.map((option, index) => {
+            const isSelectedOption = feedback && option === currentQuestion.correct_answer;
+            const isIncorrectSelected = feedback && option !== currentQuestion.correct_answer;
             
             return (
               <Button
@@ -52,7 +60,7 @@ const QuizContent: FC<QuizContentProps> = ({
                 onClick={() => onAnswerSubmit(option)}
                 variant={feedback ? "outline" : "outline"}
                 className={cn(
-                  "min-w-[120px] transition-colors",
+                  "w-full max-w-md transition-colors",
                   feedback && isSelectedOption && "border-green-600 bg-green-50 text-green-600 hover:bg-green-50",
                   feedback && isIncorrectSelected && "border-red-600 bg-red-50 text-red-600 hover:bg-red-50"
                 )}
