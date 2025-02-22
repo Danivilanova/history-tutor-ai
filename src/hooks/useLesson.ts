@@ -44,12 +44,9 @@ export function useLesson(selectedAgent: TutorAgent, sections?: any[]) {
 
       const signedUrl = await getSignedUrl(selectedAgent.id);
 
-      // Create a comprehensive lesson content string
+      // Create a lesson content string using only the main content
       const lessonContent = sections?.map(section => {
-        const content = section.generated_content?.length > 0
-          ? section.generated_content[0].generated_text
-          : section.content;
-        return `${section.title}:\n${content}`;
+        return `${section.title}:\n${section.content}`;
       }).join('\n\n');
 
       // Enhance the agent's prompt with lesson content
