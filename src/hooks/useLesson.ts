@@ -73,14 +73,14 @@ Important instructions:
 1. First, I must ask for the student's name if I don't know it yet. I should say something like "Before we begin, may I know your name?"
 2. Once I know their name, I should use it naturally throughout our conversation to make the interaction more personal.
 3. Only after learning their name should I begin teaching the lesson content.
-4. For every new concept or section I'm about to explain, I MUST first use the generateSlide tool to create a visual representation. The format should be:
-   - Call generateSlide with a message that summarizes the concept
+4. For every new concept or section I'm about to explain, I MUST first use the 'generateSlide' tool to create a visual representation. The format should be:
+   - Call 'generateSlide' with a message that summarizes the concept
    - Wait for the slide to be generated
    - Then explain the concept while referencing the visual aid
 5. Throughout the lesson, I should maintain my assigned teaching style while using the student's name appropriately.
 
 Remember to:
-- Always use generateSlide before explaining a new concept
+- Always use 'generateSlide' before explaining a new concept
 - Teach the content in my assigned style while maintaining accuracy
 - Break down complex concepts and encourage questions
 - Always refer to myself as ${selectedAgent.name} when introducing myself or when it feels natural in conversation
@@ -96,7 +96,7 @@ Remember to:
             prompt: {
               prompt: enhancedPrompt
             },
-            firstMessage: "Hello! I'm ${selectedAgent.name}. Before we begin, may I know your name?"
+            firstMessage: selectedAgent.firstMessage
           }
         },
         clientTools: {
@@ -104,7 +104,6 @@ Remember to:
             console.log("Generating slide with message:", message);
             // The slide generation happens automatically based on the message
             // The UI will update to show the new slide
-            return "Slide generated successfully";
           }
         },
       });
