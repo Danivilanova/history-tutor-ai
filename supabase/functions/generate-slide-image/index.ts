@@ -35,21 +35,16 @@ serve(async (req) => {
       )
     }
 
-    const sanitizedPrompt = image_description.slice(0, 500).trim()
-
-    const response = await fetch('https://fal.run/fal-ai/flux/dev', {
+    const response = await fetch('https://fal.run/fal-ai/flux/schnell', {
       method: 'POST',
       headers: {
         'Authorization': `Key ${falKey}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        input: {
-          prompt: sanitizedPrompt,
-          seed: Math.floor(Math.random() * 1000000),
-          image_size: "landscape_16_9",
-          num_images: 1,
-        }
+        prompt: image_description,
+        seed: Math.floor(Math.random() * 1000000),
+        num_images: 1,
       })
     })
 
