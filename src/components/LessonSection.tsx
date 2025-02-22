@@ -5,6 +5,7 @@ import DynamicInput from './DynamicInput';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowRight } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from 'react-router-dom';
 
 interface LessonSectionProps {
   selectedPersonality: string | null;
@@ -17,6 +18,8 @@ const LessonSection = ({
   onGenerateLesson,
   onStartLesson
 }: LessonSectionProps) => {
+  const navigate = useNavigate();
+  
   const { data: lessons, isLoading } = useQuery({
     queryKey: ['lessons'],
     queryFn: async () => {
@@ -29,6 +32,16 @@ const LessonSection = ({
       return data;
     }
   });
+
+  const handleStartLesson = (title: string) => {
+    onStartLesson(title);
+    navigate(`/lesson?title=${encodeURIComponent(title)}&personality=${selectedPersonality}`);
+  };
+
+  const handleGenerateCustomLesson = (topic: string) => {
+    onGenerateLesson(topic);
+    navigate(`/lesson?title=${encodeURIComponent(topic)}&personality=${selectedPersonality}`);
+  };
 
   return (
     <div className="space-y-8 relative">
@@ -48,7 +61,7 @@ const LessonSection = ({
           </Badge>
           <h2 className="text-xl sm:text-2xl font-semibold">Choose Your Learning Path</h2>
         </div>
-        <DynamicInput onGenerate={onGenerateLesson} />
+        <DynamicInput onGenerate={handleGenerateCustomLesson} />
       </div>
 
       <div>
@@ -70,7 +83,7 @@ const LessonSection = ({
                 key={lesson.id}
                 title={lesson.title}
                 difficulty={lesson.difficulty}
-                onStart={() => onStartLesson(lesson.title)}
+                onStart={() => handleStartLesson(lesson.title)}
                 backgroundImage={lesson.background_image || undefined}
               />
             ))
