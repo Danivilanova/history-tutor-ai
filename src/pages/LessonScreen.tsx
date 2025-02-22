@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react';
+
+import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { Card } from "@/components/ui/card";
 import SpeakingIndicator from '@/components/SpeakingIndicator';
 import LessonHeader from '@/components/lesson/LessonHeader';
 import SlideContent from '@/components/lesson/SlideContent';
 import QuizContent from '@/components/lesson/QuizContent';
+import { supabase } from "@/integrations/supabase/client";
 
 const SAMPLE_LESSON = {
   title: "The Fall of Rome",
@@ -45,26 +47,68 @@ const LessonScreen = () => {
   const [volume, setVolume] = useState(0.5);
   const [feedback, setFeedback] = useState('');
   const [isComplete, setIsComplete] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const playAudio = async (text: string) => {
+    if (isMuted) return;
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('text-to-speech', {
+        body: { text },
+      });
+
+      if (error) throw error;
+
+      if (data.audio) {
+        const audioBlob = new Blob(
+          [Uint8Array.from(atob(data.audio), c => c.charCodeAt(0))],
+          { type: 'audio/mpeg' }
+        );
+        const audioUrl = URL.createObjectURL(audioBlob);
+
+        if (audioRef.current) {
+          audioRef.current.src = audioUrl;
+          audioRef.current.volume = volume;
+          await audioRef.current.play();
+        }
+      }
+    } catch (error) {
+      console.error('Error playing audio:', error);
+      toast.error('Failed to play audio');
+    }
+  };
 
   useEffect(() => {
-    if (currentSlide < SAMPLE_LESSON.slides.length) {
+    if (currentSlide < SAMPLE_LESSON.slides.length && !isMuted) {
       setIsSpeaking(true);
-      const timer = setTimeout(() => {
-        setIsSpeaking(false);
-        if (currentSlide < SAMPLE_LESSON.slides.length - 1) {
-          setCurrentSlide(prev => prev + 1);
-        } else {
-          startQuiz();
+      playAudio(SAMPLE_LESSON.slides[currentSlide].text).then(() => {
+        if (audioRef.current) {
+          audioRef.current.onended = () => {
+            setIsSpeaking(false);
+            if (currentSlide < SAMPLE_LESSON.slides.length - 1) {
+              setCurrentSlide(prev => prev + 1);
+            } else {
+              startQuiz();
+            }
+          };
         }
-      }, 5000);
-      return () => clearTimeout(timer);
+      });
     }
-  }, [currentSlide]);
+  }, [currentSlide, isMuted]);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+    }
+  }, [volume]);
 
   const startQuiz = () => {
     setIsQuizMode(true);
     setIsSpeaking(true);
     setCurrentQuiz(0);
+    if (!isMuted) {
+      playAudio("Let's test your knowledge with a quiz.");
+    }
   };
 
   const handleQuizAnswer = (answer: string) => {
@@ -73,6 +117,10 @@ const LessonScreen = () => {
     const isCorrect = answer === SAMPLE_LESSON.quiz[currentQuiz].correct;
     setFeedback(isCorrect ? "Correct!" : "Not quite. Let's try the next one.");
     
+    if (!isMuted) {
+      playAudio(isCorrect ? "Correct! Well done!" : "Not quite. Let's try the next one.");
+    }
+    
     setTimeout(() => {
       setFeedback('');
       if (currentQuiz < SAMPLE_LESSON.quiz.length - 1) {
@@ -80,6 +128,9 @@ const LessonScreen = () => {
       } else {
         setIsComplete(true);
         toast.success("Congratulations! You've completed the lesson.");
+        if (!isMuted) {
+          playAudio("Congratulations! You've completed the lesson.");
+        }
       }
     }, 3000);
   };
@@ -100,6 +151,7 @@ const LessonScreen = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5">
+      <audio ref={audioRef} />
       <div className="max-w-4xl mx-auto relative min-h-screen p-2 sm:p-4 flex flex-col">
         <div className="py-2 animate-fade-in">
           <LessonHeader 
