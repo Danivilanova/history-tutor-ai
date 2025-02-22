@@ -92,16 +92,9 @@ Remember to:
                 throw new Error(response.error.message);
               }
 
-              // Wait for the slide to be updated in the UI
-              await new Promise(resolve => {
-                if (onSlideGenerated) {
-                  onSlideGenerated(text, response.data.imageUrl);
-                  // Give a small delay to ensure the UI updates
-                  setTimeout(resolve, 500);
-                } else {
-                  resolve(undefined);
-                }
-              });
+              if (onSlideGenerated) {
+                onSlideGenerated(text, response.data.imageUrl);
+              }
 
               // Return a message that encourages the AI to continue with the lesson
               return `I've generated a slide showing "${text}". Please continue explaining this concept and then move on to the next section.`;
