@@ -1,18 +1,12 @@
-
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Volume2, VolumeX, ArrowLeft } from 'lucide-react';
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import SpeakingIndicator from '@/components/SpeakingIndicator';
 import ProgressIndicator from '@/components/ProgressIndicator';
-
-interface LessonSlide {
-  text: string;
-  image?: string;
-}
+import LessonHeader from '@/components/lesson/LessonHeader';
+import SlideContent from '@/components/lesson/SlideContent';
+import QuizContent from '@/components/lesson/QuizContent';
 
 const SAMPLE_LESSON = {
   title: "The Fall of Rome",
@@ -45,7 +39,6 @@ const SAMPLE_LESSON = {
 };
 
 const LessonScreen = () => {
-  const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isQuizMode, setIsQuizMode] = useState(false);
@@ -73,7 +66,7 @@ const LessonScreen = () => {
   const startQuiz = () => {
     setIsQuizMode(true);
     setIsSpeaking(true);
-    setCurrentQuiz(0); // Ensure we start at the first question
+    setCurrentQuiz(0);
   };
 
   const handleQuizAnswer = (answer: string) => {
@@ -107,82 +100,14 @@ const LessonScreen = () => {
     : currentSlide + 1;
   const totalSteps = SAMPLE_LESSON.slides.length + SAMPLE_LESSON.quiz.length;
 
-  const renderContent = () => {
-    if (!isQuizMode) {
-      return (
-        <>
-          <div className="w-full text-center animate-fade-in">
-            <p className="text-xl mt-4">{SAMPLE_LESSON.slides[currentSlide].text}</p>
-          </div>
-          {SAMPLE_LESSON.slides[currentSlide].image && (
-            <div className="w-full max-w-2xl h-64 rounded-lg overflow-hidden animate-fade-in mt-8">
-              <img 
-                src={SAMPLE_LESSON.slides[currentSlide].image} 
-                alt="Lesson illustration"
-                className="w-full h-full object-cover"
-              />
-            </div>
-          )}
-        </>
-      );
-    }
-
-    if (isComplete) {
-      return (
-        <div className="text-center animate-fade-in">
-          <h3 className="text-xl mb-6">Lesson Complete!</h3>
-          <Button onClick={() => navigate('/')}>Return to Home</Button>
-        </div>
-      );
-    }
-
-    if (currentQuiz < SAMPLE_LESSON.quiz.length) {
-      return (
-        <div className="text-center animate-fade-in">
-          <h3 className="text-xl mb-6">{SAMPLE_LESSON.quiz[currentQuiz].question}</h3>
-          <div className="flex gap-4 justify-center">
-            {SAMPLE_LESSON.quiz[currentQuiz].options.map((option, index) => (
-              <Button
-                key={index}
-                onClick={() => handleQuizAnswer(option)}
-                variant="outline"
-                className="min-w-[120px]"
-              >
-                {option}
-              </Button>
-            ))}
-          </div>
-          {feedback && (
-            <p className="mt-4 text-lg animate-fade-in">{feedback}</p>
-          )}
-        </div>
-      );
-    }
-
-    return null;
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5 p-4">
       <div className="max-w-4xl mx-auto relative">
-        <div className="flex items-center gap-4 mb-6">
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate('/')}
-            className="hover:bg-primary/10"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="text-2xl font-bold">{SAMPLE_LESSON.title}</h1>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="ml-auto"
-            onClick={() => setIsMuted(!isMuted)}
-          >
-            {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
-          </Button>
-        </div>
+        <LessonHeader 
+          title={SAMPLE_LESSON.title}
+          isMuted={isMuted}
+          onMuteToggle={() => setIsMuted(!isMuted)}
+        />
 
         <ProgressIndicator 
           current={currentProgress} 
@@ -193,7 +118,21 @@ const LessonScreen = () => {
           <div className="absolute top-4 left-1/2 -translate-x-1/2">
             <SpeakingIndicator isActive={isSpeaking} />
           </div>
-          {renderContent()}
+          
+          {!isQuizMode ? (
+            <SlideContent 
+              text={SAMPLE_LESSON.slides[currentSlide].text}
+              image={SAMPLE_LESSON.slides[currentSlide].image}
+            />
+          ) : (
+            <QuizContent 
+              isComplete={isComplete}
+              currentQuiz={currentQuiz}
+              quiz={SAMPLE_LESSON.quiz}
+              feedback={feedback}
+              onAnswerSubmit={handleQuizAnswer}
+            />
+          )}
         </Card>
 
         <form onSubmit={handleQuestion} className="relative">
