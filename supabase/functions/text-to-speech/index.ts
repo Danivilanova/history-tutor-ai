@@ -12,12 +12,11 @@ serve(async (req) => {
   }
 
   try {
-    const { text } = await req.json();
+    const { text, voiceId } = await req.json();
     const ELEVEN_LABS_API_KEY = Deno.env.get('ELEVEN_LABS_API_KEY');
-    const VOICE_ID = '9BWtsMINqrJLrRacOk9x'; // Aria voice ID
 
     const response = await fetch(
-      `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`,
+      `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
       {
         method: 'POST',
         headers: {

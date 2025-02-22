@@ -2,7 +2,7 @@
 import { FC } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Volume2 } from "lucide-react";
+import { Volume2, Pause } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface TutorPersonalityCardProps {
@@ -11,6 +11,7 @@ interface TutorPersonalityCardProps {
   icon: JSX.Element;
   color: string;
   isSelected: boolean;
+  isPlayingPreview: boolean;
   onSelect: () => void;
   onPreviewVoice: () => void;
 }
@@ -21,6 +22,7 @@ const TutorPersonalityCard: FC<TutorPersonalityCardProps> = ({
   icon,
   color,
   isSelected,
+  isPlayingPreview,
   onSelect,
   onPreviewVoice
 }) => {
@@ -50,13 +52,20 @@ const TutorPersonalityCard: FC<TutorPersonalityCardProps> = ({
           <Button
             variant="ghost"
             size="icon"
-            className="hover:bg-primary/10"
+            className={cn(
+              "hover:bg-primary/10",
+              isPlayingPreview && "animate-pulse bg-primary/10"
+            )}
             onClick={(e) => {
               e.stopPropagation();
               onPreviewVoice();
             }}
           >
-            <Volume2 className="h-4 w-4" />
+            {isPlayingPreview ? (
+              <Pause className="h-4 w-4" />
+            ) : (
+              <Volume2 className="h-4 w-4" />
+            )}
           </Button>
         </div>
         <h3 className="text-lg font-semibold mb-2">{title}</h3>
