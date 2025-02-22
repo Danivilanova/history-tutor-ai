@@ -1,9 +1,11 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { Smile, Shield, Laugh } from 'lucide-react';
 import LessonCard from '../components/LessonCard';
 import DynamicInput from '../components/DynamicInput';
 import { Badge } from "@/components/ui/badge";
+import TutorPersonalityCard from '../components/TutorPersonalityCard';
 
 const predefinedLessons = [
   { 
@@ -32,9 +34,42 @@ const predefinedLessons = [
   },
 ];
 
+const tutorPersonalities = [
+  {
+    id: 'friendly',
+    title: 'Friendly',
+    description: 'Warm and encouraging, perfect for a supportive learning experience',
+    icon: <Smile className="h-6 w-6 text-primary" />,
+    color: '#6B4EFF',
+    previewText: "Hi! I'm excited to help you learn history in a friendly and supportive way!"
+  },
+  {
+    id: 'strict',
+    title: 'Strict',
+    description: 'Focused and disciplined, ideal for structured learning',
+    icon: <Shield className="h-6 w-6 text-primary" />,
+    color: '#1A1F2C',
+    previewText: "Welcome. Let's maintain focus and achieve our learning objectives efficiently."
+  },
+  {
+    id: 'funny',
+    title: 'Funny',
+    description: 'Light-hearted and engaging, making learning fun and memorable',
+    icon: <Laugh className="h-6 w-6 text-primary" />,
+    color: '#F97316',
+    previewText: "Hey there! Ready to make history fun? Let's dive in with a smile!"
+  }
+];
+
 const Index = () => {
+  const [selectedPersonality, setSelectedPersonality] = useState<string | null>(null);
+
   const handleStartLesson = (title: string) => {
-    toast.success(`Starting lesson: ${title}`);
+    if (!selectedPersonality) {
+      toast.error("Please select a tutor personality first");
+      return;
+    }
+    toast.success(`Starting lesson: ${title} with ${selectedPersonality} tutor`);
   };
 
   const handleGenerateLesson = (topic: string) => {
@@ -42,7 +77,16 @@ const Index = () => {
       toast.error("Please enter a topic first");
       return;
     }
-    toast.success(`Generating lesson about: ${topic}`);
+    if (!selectedPersonality) {
+      toast.error("Please select a tutor personality first");
+      return;
+    }
+    toast.success(`Generating lesson about: ${topic} with ${selectedPersonality} tutor`);
+  };
+
+  const handlePreviewVoice = (text: string) => {
+    // This is where you would integrate with a text-to-speech service
+    toast.info("Playing voice preview...");
   };
 
   return (
@@ -59,6 +103,27 @@ const Index = () => {
             Dive into history with your personal AI tutor. Learn at your own pace with interactive, 
             adaptable lessons tailored just for you.
           </p>
+        </div>
+
+        <div className="mb-16">
+          <h2 className="text-2xl font-semibold mb-6">Choose Your Tutor's Personality</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            {tutorPersonalities.map((personality) => (
+              <TutorPersonalityCard
+                key={personality.id}
+                title={personality.title}
+                description={personality.description}
+                icon={personality.icon}
+                color={personality.color}
+                isSelected={selectedPersonality === personality.id}
+                onSelect={() => {
+                  setSelectedPersonality(personality.id);
+                  toast.success(`Selected ${personality.title} tutor personality`);
+                }}
+                onPreviewVoice={() => handlePreviewVoice(personality.previewText)}
+              />
+            ))}
+          </div>
         </div>
 
         <div className="mb-16">
