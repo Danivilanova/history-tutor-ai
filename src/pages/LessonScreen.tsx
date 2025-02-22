@@ -160,6 +160,16 @@ const LessonScreen = () => {
   };
 
   useEffect(() => {
+    if (!isMuted) {
+      startConversation();
+    }
+
+    return () => {
+      endConversation();
+    };
+  }, []);
+
+  useEffect(() => {
     if (conversation) {
       conversation.setVolume({ volume });
     }
