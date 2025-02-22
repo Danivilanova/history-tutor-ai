@@ -15,17 +15,17 @@ const DynamicInput: FC<DynamicInputProps> = ({ onGenerate }) => {
   return (
     <Card className="glass animate-fade-in">
       <CardContent className="pt-6">
-        <div className="relative">
+        <div className="relative flex gap-2 flex-wrap sm:flex-nowrap">
           <Input
             type="text"
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
             placeholder="Type a topic, like 'Ancient Egypt'"
-            className="pr-32 bg-white/50 border-white/20"
+            className="bg-white/50 border-white/20 flex-1"
           />
           <Button
             onClick={() => onGenerate(topic)}
-            className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2"
+            className="flex items-center gap-2 whitespace-nowrap min-w-[120px]"
           >
             <Book className="h-4 w-4" />
             Generate
