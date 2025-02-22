@@ -32,11 +32,6 @@ export function useConversationHandler(
 
   const startConversation = async () => {
     try {
-      console.log('Starting conversation with agent:', {
-        name: selectedAgent.name,
-        id: selectedAgent.id
-      });
-
       const hasPermission = await requestMicrophonePermission()
       if (!hasPermission) {
         console.error('Microphone permission denied');
@@ -45,7 +40,6 @@ export function useConversationHandler(
       }
 
       const signedUrl = await getSignedUrl(selectedAgent.id);
-      console.log('Got signed URL for voice ID:', selectedAgent.id);
 
       const lessonContent = sections?.map(section => {
         return `${section.title}:\n${section.content}`;
@@ -64,6 +58,7 @@ Important instructions:
    - Wait for the slide to be generated
    - Then explain the concept while referencing the visual aid
 2. Throughout the lesson, I should maintain my assigned teaching style while using the student's name appropriately.
+3. After generating a slide and explaining its content, I MUST continue to the next section WITHOUT waiting for user input.
 
 Remember to:
 - Always use 'generateSlide' before explaining a new concept
@@ -71,9 +66,8 @@ Remember to:
 - Break down complex concepts and encourage questions
 - Always refer to myself as ${selectedAgent.name} when introducing myself or when it feels natural in conversation
 - Reference the visual aids I create to enhance understanding
+- IMPORTANT: After each slide generation and explanation, automatically proceed to the next section
 `;
-
-      console.log('Starting ElevenLabs session with prompt length:', enhancedPrompt.length);
 
       const conversationId = await conversation.startSession({
         signedUrl,
@@ -98,22 +92,21 @@ Remember to:
                 throw new Error(response.error.message);
               }
 
-              // Notify the UI about the new slide content
               if (onSlideGenerated) {
                 onSlideGenerated(text, response.data.imageUrl);
               }
 
-              return `Generated slide with text: "${text}" and image: ${response.data.imageUrl}`;
+              // Return a message that encourages the AI to continue with the lesson
+              return `I've generated a slide showing "${text}". Please continue explaining this concept and then move on to the next section.`;
             } catch (error) {
               console.error('Failed to generate slide image:', error);
               toast.error('Failed to generate slide image');
-              return "Failed to generate slide";
+              return "Failed to generate slide. Please continue with the lesson.";
             }
           }
         },
       });
 
-      console.log('Conversation started with ID:', conversationId);
       onStart();
       onSpeakingChange(true);
       conversation.setVolume({ volume });
