@@ -1,6 +1,4 @@
 
-import { Smile, Shield, Laugh } from 'lucide-react';
-
 export const predefinedLessons = [
   { 
     id: 1, 
@@ -33,7 +31,7 @@ export const tutorPersonalities = [
     id: 'friendly',
     title: 'Friendly',
     description: 'Warm and encouraging, perfect for a supportive learning experience',
-    icon: <Smile className="h-6 w-6 text-primary" />,
+    iconName: 'Smile',
     color: '#6B4EFF',
     audioSample: '/friendly_sample.mp3'
   },
@@ -41,7 +39,7 @@ export const tutorPersonalities = [
     id: 'strict',
     title: 'Strict',
     description: 'Focused and disciplined, ideal for structured learning',
-    icon: <Shield className="h-6 w-6 text-primary" />,
+    iconName: 'Shield',
     color: '#1A1F2C',
     audioSample: '/strict_sample.mp3'
   },
@@ -49,7 +47,7 @@ export const tutorPersonalities = [
     id: 'funny',
     title: 'Funny',
     description: 'Light-hearted and engaging, making learning fun and memorable',
-    icon: <Laugh className="h-6 w-6 text-primary" />,
+    iconName: 'Laugh',
     color: '#F97316',
     audioSample: '/funny_sample.mp3'
   }

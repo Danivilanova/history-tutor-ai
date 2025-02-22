@@ -2,13 +2,13 @@
 import { FC } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Volume2, Pause } from "lucide-react";
+import { Volume2, Pause, Smile, Shield, Laugh } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface TutorPersonalityCardProps {
   title: string;
   description: string;
-  icon: JSX.Element;
+  iconName: string;
   color: string;
   isSelected: boolean;
   isPlayingPreview: boolean;
@@ -16,16 +16,24 @@ interface TutorPersonalityCardProps {
   onPreviewVoice: () => void;
 }
 
+const iconComponents = {
+  Smile,
+  Shield,
+  Laugh,
+} as const;
+
 const TutorPersonalityCard: FC<TutorPersonalityCardProps> = ({
   title,
   description,
-  icon,
+  iconName,
   color,
   isSelected,
   isPlayingPreview,
   onSelect,
   onPreviewVoice
 }) => {
+  const IconComponent = iconComponents[iconName as keyof typeof iconComponents];
+
   return (
     <Card 
       className={cn(
@@ -47,7 +55,7 @@ const TutorPersonalityCard: FC<TutorPersonalityCardProps> = ({
             "p-2 rounded-full",
             isSelected ? "bg-primary/20" : "bg-muted"
           )}>
-            {icon}
+            <IconComponent className="h-6 w-6 text-primary" />
           </div>
           <Button
             variant="ghost"
