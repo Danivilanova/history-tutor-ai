@@ -148,21 +148,10 @@ const LessonScreen = () => {
         return;
       }
 
-      const { data, error } = await supabase.functions.invoke('get-signed-url', {
-        body: { agentId: selectedAgent.id }
-      });
-
-      if (error) {
-        console.error('Error getting signed URL:', error);
-        throw new Error('Failed to get signed URL');
-      }
-
-      if (!data?.signedUrl) {
-        throw new Error('No signed URL received');
-      }
+      const signedUrl = await getSignedUrl(selectedAgent.id);
 
       const conversationId = await conversation.startSession({
-        signedUrl: data.signedUrl,
+        signedUrl,
         overrides: {
           agent: {
             prompt: {
