@@ -117,29 +117,6 @@ const LessonScreen = () => {
     }
   });
 
-  const lessonTitle = location.state?.title || "The Fall of Rome";
-
-  const { data: sections, isLoading } = useQuery({
-    queryKey: ['lessonSections', lessonTitle],
-    queryFn: async () => {
-      const { data: lesson } = await supabase
-        .from('lessons')
-        .select('id')
-        .eq('title', lessonTitle)
-        .single();
-
-      if (!lesson) throw new Error('Lesson not found');
-
-      const { data } = await supabase
-        .from('lesson_sections')
-        .select('*, generated_content(*)')
-        .eq('lesson_id', lesson.id)
-        .order('order_index');
-
-      return data as (LessonSection & { generated_content: GeneratedContent[] })[];
-    }
-  });
-
   const startConversation = async () => {
     try {
       const hasPermission = await requestMicrophonePermission()
@@ -188,13 +165,16 @@ const LessonScreen = () => {
     }
   }, [volume]);
 
-  useEffect(() => {
-    if (isMuted) {
+  const handleVolumeChange = (newVolume: number) => {
+    setVolume(newVolume);
+    if (newVolume === 0) {
+      setIsMuted(true);
       endConversation();
-    } else {
+    } else if (isMuted) {
+      setIsMuted(false);
       startConversation();
     }
-  }, [isMuted]);
+  };
 
   const startQuiz = () => {
     setIsQuizMode(true);
@@ -225,15 +205,28 @@ const LessonScreen = () => {
     }, 3000);
   };
 
-  const handleVolumeChange = (newVolume: number) => {
-    setVolume(newVolume);
-    if (newVolume === 0) {
-      setIsMuted(true);
-    } else if (isMuted) {
-      setIsMuted(false);
+  const lessonTitle = location.state?.title || "The Fall of Rome";
+
+  const { data: sections, isLoading } = useQuery({
+    queryKey: ['lessonSections', lessonTitle],
+    queryFn: async () => {
+      const { data: lesson } = await supabase
+        .from('lessons')
+        .select('id')
+        .eq('title', lessonTitle)
+        .single();
+
+      if (!lesson) throw new Error('Lesson not found');
+
+      const { data } = await supabase
+        .from('lesson_sections')
+        .select('*, generated_content(*)')
+        .eq('lesson_id', lesson.id)
+        .order('order_index');
+
+      return data as (LessonSection & { generated_content: GeneratedContent[] })[];
     }
-    conversation.setVolume({ volume: newVolume });
-  };
+  });
 
   if (isLoading) {
     return (
