@@ -2,7 +2,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useQuery } from '@tanstack/react-query';
-import { useLocation } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import SpeakingIndicator from '@/components/SpeakingIndicator';
 import LessonHeader from '@/components/lesson/LessonHeader';
 import SlideContent from '@/components/lesson/SlideContent';
@@ -13,10 +13,10 @@ import { TUTOR_AGENTS } from '@/constants/lesson';
 import type { LessonSection, GeneratedContent } from '@/types/lesson';
 
 const LessonScreen = () => {
-  const location = useLocation();
-  const tutorPersonality = (location.state?.personality || 'friendly') as keyof typeof TUTOR_AGENTS;
+  const [searchParams] = useSearchParams();
+  const tutorPersonality = (searchParams.get('personality') || 'friendly') as keyof typeof TUTOR_AGENTS;
   const selectedAgent = TUTOR_AGENTS[tutorPersonality];
-  const lessonTitle = location.state?.title || "The Fall of Rome";
+  const lessonTitle = searchParams.get('title') || "The Fall of Rome";
 
   const { data: sections, isLoading } = useQuery({
     queryKey: ['lessonSections', lessonTitle],
