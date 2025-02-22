@@ -4,6 +4,7 @@ import { useConversation } from '@11labs/react';
 import { toast } from 'sonner';
 import { getSignedUrl, requestMicrophonePermission } from '@/utils/lessonUtils';
 import { TutorAgent } from '@/types/lesson';
+import { QUIZ_DATA } from '@/constants/lesson';
 
 export function useLesson(selectedAgent: TutorAgent) {
   const [currentSlide, setCurrentSlide] = useState(0);
