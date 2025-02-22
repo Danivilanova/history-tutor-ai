@@ -43,6 +43,24 @@ const QUIZ_DATA = {
   ]
 };
 
+const TUTOR_AGENTS = {
+  funny: {
+    id: "XgEPMPMknaQUnTTle5TN",
+    prompt: "You are a fun and entertaining tutor who uses humor to make learning engaging. You make jokes and keep the mood light while teaching history effectively.",
+    firstMessage: "Hey there! Ready to make history fun? Let's dive into this exciting topic with some laughs along the way!",
+  },
+  strict: {
+    id: "CF9oLSxkWjupoRyRJQg0",
+    prompt: "You are a strict and disciplined tutor who emphasizes accuracy and attention to detail. You maintain high standards while teaching history.",
+    firstMessage: "Welcome to your history lesson. We'll proceed systematically through this important topic. Pay close attention.",
+  },
+  friendly: {
+    id: "vAElDozxD5rk5YtoPvRw",
+    prompt: "You are a friendly and supportive tutor who makes history accessible and engaging. You encourage questions and create a comfortable learning environment.",
+    firstMessage: "Hello! I'm excited to explore this fascinating historical topic with you. Let's learn together!",
+  }
+};
+
 const LessonScreen = () => {
   const location = useLocation();
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -53,14 +71,17 @@ const LessonScreen = () => {
   const [volume, setVolume] = useState(0.5);
   const [feedback, setFeedback] = useState('');
   const [isComplete, setIsComplete] = useState(false);
+
+  const tutorPersonality = (location.state?.personality || 'friendly') as keyof typeof TUTOR_AGENTS;
+  const selectedAgent = TUTOR_AGENTS[tutorPersonality];
   
   const conversation = useConversation({
     overrides: {
       agent: {
         prompt: {
-          prompt: "You are a friendly and knowledgeable tutor. You teach history in an engaging way, making complex topics easy to understand. You are patient and encouraging.",
+          prompt: selectedAgent.prompt,
         },
-        firstMessage: "Hello! I'll be your history tutor today. Let's explore this fascinating topic together.",
+        firstMessage: selectedAgent.firstMessage,
         language: "en",
       },
       tts: {
@@ -133,7 +154,7 @@ const LessonScreen = () => {
         : currentSection.content;
 
       conversation.startSession({
-        agentId: "your_agent_id_here"
+        agentId: selectedAgent.id
       }).then(() => {
         conversation.setVolume({ volume });
       }).catch((error) => {
@@ -161,7 +182,7 @@ const LessonScreen = () => {
     setCurrentQuiz(0);
     if (!isMuted) {
       conversation.startSession({
-        agentId: "your_agent_id_here"
+        agentId: selectedAgent.id
       }).then(() => {
       }).catch(console.error);
     }
@@ -175,7 +196,7 @@ const LessonScreen = () => {
     
     if (!isMuted) {
       conversation.startSession({
-        agentId: "your_agent_id_here"
+        agentId: selectedAgent.id
       }).then(() => {
       }).catch(console.error);
     }
@@ -216,7 +237,6 @@ const LessonScreen = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5">
-      <audio ref={audioRef} />
       <div className="max-w-4xl mx-auto relative min-h-screen p-2 sm:p-4 flex flex-col">
         <div className="py-2 animate-fade-in">
           <LessonHeader 
