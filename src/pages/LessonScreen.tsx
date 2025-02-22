@@ -91,39 +91,58 @@ const LessonScreen = () => {
   const totalSteps = SAMPLE_LESSON.slides.length + SAMPLE_LESSON.quiz.length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5 p-4">
-      <div className="max-w-4xl mx-auto relative h-[calc(100vh-2rem)] flex flex-col">
-        <LessonHeader 
-          title={SAMPLE_LESSON.title}
-          isMuted={isMuted}
-          onMuteToggle={() => setIsMuted(!isMuted)}
-        />
+    <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5">
+      <div className="max-w-4xl mx-auto relative min-h-screen p-4 flex flex-col">
+        <div className="py-4 animate-fade-in">
+          <LessonHeader 
+            title={SAMPLE_LESSON.title}
+            isMuted={isMuted}
+            onMuteToggle={() => setIsMuted(!isMuted)}
+          />
 
-        <ProgressIndicator 
-          current={currentProgress} 
-          total={totalSteps} 
-        />
+          <div className="relative h-2 bg-muted rounded-full mb-8 overflow-hidden">
+            <div 
+              className="absolute left-0 top-0 h-full bg-primary transition-all duration-300 rounded-full"
+              style={{ 
+                width: `${(currentProgress / totalSteps) * 100}%`,
+              }}
+            />
+          </div>
+        </div>
 
-        <Card className="p-8 flex-1 flex flex-col items-center justify-center relative">
-          <div className="absolute top-4 left-1/2 -translate-x-1/2">
+        <Card className="flex-1 flex flex-col relative overflow-hidden backdrop-blur-sm bg-card/80 border-primary/10 animate-fade-in-scale">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/0 via-primary/20 to-primary/0" />
+          
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10">
             <SpeakingIndicator isActive={isSpeaking} />
           </div>
           
-          {!isQuizMode ? (
-            <SlideContent 
-              text={SAMPLE_LESSON.slides[currentSlide].text}
-              image={SAMPLE_LESSON.slides[currentSlide].image}
-            />
-          ) : (
-            <QuizContent 
-              isComplete={isComplete}
-              currentQuiz={currentQuiz}
-              quiz={SAMPLE_LESSON.quiz}
-              feedback={feedback}
-              onAnswerSubmit={handleQuizAnswer}
-            />
-          )}
+          <div className="flex-1 flex items-center justify-center p-8">
+            {!isQuizMode ? (
+              <SlideContent 
+                text={SAMPLE_LESSON.slides[currentSlide].text}
+                image={SAMPLE_LESSON.slides[currentSlide].image}
+              />
+            ) : (
+              <QuizContent 
+                isComplete={isComplete}
+                currentQuiz={currentQuiz}
+                quiz={SAMPLE_LESSON.quiz}
+                feedback={feedback}
+                onAnswerSubmit={handleQuizAnswer}
+              />
+            )}
+          </div>
+
+          <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary/0 via-primary/20 to-primary/0" />
         </Card>
+
+        <div className="absolute top-4 right-4">
+          <ProgressIndicator 
+            current={currentProgress} 
+            total={totalSteps}
+          />
+        </div>
       </div>
     </div>
   );
