@@ -85,34 +85,33 @@ const Index = () => {
   };
 
   const handlePreviewVoice = (text: string) => {
-    // This is where you would integrate with a text-to-speech service
     toast.info("Playing voice preview...");
   };
 
   return (
-    <div className="min-h-screen py-12 px-4 sm:px-6 bg-gradient-to-b from-background via-background to-primary/5">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16 animate-fade-in">
-          <Badge variant="secondary" className="mb-4 bg-primary/10 text-primary hover:bg-primary/20 animate-float">
+    <div className="min-h-screen py-6 sm:py-12 px-4 sm:px-6 bg-gradient-to-b from-background via-background to-primary/5">
+      <div className="max-w-7xl mx-auto space-y-8 sm:space-y-16">
+        <div className="text-center animate-fade-in space-y-4">
+          <Badge variant="secondary" className="mb-2 bg-primary/10 text-primary hover:bg-primary/20 animate-float">
             Welcome to History Tutor AI
           </Badge>
-          <h1 className="text-4xl sm:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/50">
+          <h1 className="text-3xl sm:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/50 px-4">
             Explore the Past, Your Way
           </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
             Dive into history with your personal AI tutor. Learn at your own pace with interactive, 
             adaptable lessons tailored just for you.
           </p>
         </div>
 
-        <div className="mb-16 rounded-xl bg-gradient-to-b from-primary/5 to-background p-8 border animate-fade-in">
+        <div className="rounded-xl bg-gradient-to-b from-primary/5 to-background p-4 sm:p-8 border animate-fade-in">
           <div className="flex items-center gap-2 mb-6">
             <Badge variant="secondary" className="bg-primary/10 text-primary">
               Step 1
             </Badge>
-            <h2 className="text-2xl font-semibold">Choose Your Tutor's Personality</h2>
+            <h2 className="text-xl sm:text-2xl font-semibold">Choose Your Tutor's Personality</h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
             {tutorPersonalities.map((personality) => (
               <TutorPersonalityCard
                 key={personality.id}
@@ -131,18 +130,18 @@ const Index = () => {
           </div>
         </div>
 
-        <div className="mb-16">
+        <div>
           <div className="flex items-center gap-2 mb-6">
             <Badge variant="secondary" className="bg-primary/10 text-primary">
               Step 2
             </Badge>
-            <h2 className="text-2xl font-semibold">Choose Your Learning Path</h2>
+            <h2 className="text-xl sm:text-2xl font-semibold">Choose Your Learning Path</h2>
           </div>
           <div className="relative">
             {!selectedPersonality && (
               <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-xl">
-                <div className="text-center p-6">
-                  <p className="text-lg font-medium mb-2">Select a tutor personality first</p>
+                <div className="text-center p-4 sm:p-6">
+                  <p className="text-base sm:text-lg font-medium mb-2">Select a tutor personality first</p>
                   <ArrowRight className="h-6 w-6 mx-auto text-primary animate-bounce" />
                 </div>
               </div>
@@ -151,22 +150,22 @@ const Index = () => {
           </div>
         </div>
 
-        <div className="relative mb-8">
-          <div className="flex items-center gap-2 mb-8">
+        <div className="relative">
+          <div className="flex items-center gap-2 mb-6">
             <Badge variant="secondary" className="bg-primary/10 text-primary">
               Or
             </Badge>
-            <h2 className="text-2xl font-semibold">Choose from Featured Lessons</h2>
+            <h2 className="text-xl sm:text-2xl font-semibold">Choose from Featured Lessons</h2>
           </div>
           {!selectedPersonality && (
             <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-xl">
-              <div className="text-center p-6">
-                <p className="text-lg font-medium mb-2">Select a tutor personality first</p>
+              <div className="text-center p-4 sm:p-6">
+                <p className="text-base sm:text-lg font-medium mb-2">Select a tutor personality first</p>
                 <ArrowRight className="h-6 w-6 mx-auto text-primary animate-bounce" />
               </div>
             </div>
           )}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {predefinedLessons.map((lesson) => (
               <LessonCard
                 key={lesson.id}
