@@ -25,19 +25,31 @@ export const TUTOR_AGENTS: TutorAgents = {
 export const QUIZ_DATA: QuizData = {
   quiz: [
     {
+      id: "1",
+      lesson_id: "fall-of-rome",
       question: "When did the Western Roman Empire officially end?",
       options: ["476 AD", "410 AD", "455 AD", "500 AD"],
-      correct: "476 AD"
+      correct_answer: "476 AD",
+      difficulty: "easy",
+      order_index: 1
     },
     {
+      id: "2",
+      lesson_id: "fall-of-rome",
       question: "Which Germanic chieftain deposed the last Roman emperor?",
       options: ["Odoacer", "Alaric", "Attila", "Gaiseric"],
-      correct: "Odoacer"
+      correct_answer: "Odoacer",
+      difficulty: "medium",
+      order_index: 2
     },
     {
+      id: "3",
+      lesson_id: "fall-of-rome",
       question: "What percentage of Rome's population were slaves by the 2nd century AD?",
       options: ["30-40%", "10-20%", "50-60%", "70-80%"],
-      correct: "30-40%"
+      correct_answer: "30-40%",
+      difficulty: "medium",
+      order_index: 3
     }
   ]
 };
