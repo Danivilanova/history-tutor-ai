@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Smile, Shield, Laugh, ArrowRight } from 'lucide-react';
@@ -129,30 +130,43 @@ const Index = () => {
           </div>
         </div>
 
-        {!selectedPersonality ? (
-          <div className="text-center p-6 rounded-xl bg-background/80 backdrop-blur-sm border animate-fade-in">
-            <p className="text-lg font-medium mb-2">Select a tutor personality first</p>
-            <ArrowRight className="h-6 w-6 mx-auto text-primary animate-bounce" />
-          </div>
-        ) : (
-          <div className="space-y-8">
-            <div>
-              <div className="flex flex-wrap items-center gap-2 mb-6">
-                <Badge variant="secondary" className="bg-primary/10 text-primary whitespace-nowrap">
-                  Step 2
-                </Badge>
-                <h2 className="text-xl sm:text-2xl font-semibold">Choose Your Learning Path</h2>
-              </div>
+        <div className="space-y-8">
+          <div>
+            <div className="flex flex-wrap items-center gap-2 mb-6">
+              <Badge variant="secondary" className="bg-primary/10 text-primary whitespace-nowrap">
+                Step 2
+              </Badge>
+              <h2 className="text-xl sm:text-2xl font-semibold">Choose Your Learning Path</h2>
+            </div>
+            <div className="relative">
+              {!selectedPersonality && (
+                <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-xl">
+                  <div className="text-center p-4">
+                    <p className="text-lg font-medium mb-2">Select a tutor personality first</p>
+                    <ArrowRight className="h-6 w-6 mx-auto text-primary animate-bounce" />
+                  </div>
+                </div>
+              )}
               <DynamicInput onGenerate={handleGenerateLesson} />
             </div>
+          </div>
 
-            <div>
-              <div className="flex flex-wrap items-center gap-2 mb-6">
-                <Badge variant="secondary" className="bg-primary/10 text-primary">
-                  Or
-                </Badge>
-                <h2 className="text-xl sm:text-2xl font-semibold">Choose from Featured Lessons</h2>
-              </div>
+          <div>
+            <div className="flex flex-wrap items-center gap-2 mb-6">
+              <Badge variant="secondary" className="bg-primary/10 text-primary">
+                Or
+              </Badge>
+              <h2 className="text-xl sm:text-2xl font-semibold">Choose from Featured Lessons</h2>
+            </div>
+            <div className="relative">
+              {!selectedPersonality && (
+                <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-xl">
+                  <div className="text-center p-4">
+                    <p className="text-lg font-medium mb-2">Select a tutor personality first</p>
+                    <ArrowRight className="h-6 w-6 mx-auto text-primary animate-bounce" />
+                  </div>
+                </div>
+              )}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 {predefinedLessons.map((lesson) => (
                   <LessonCard
@@ -166,7 +180,7 @@ const Index = () => {
               </div>
             </div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
