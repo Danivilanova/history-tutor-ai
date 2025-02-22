@@ -179,19 +179,14 @@ const LessonScreen = () => {
     setVolume(newVolume);
     if (newVolume === 0) {
       setIsMuted(true);
-      endConversation();
     } else if (isMuted) {
       setIsMuted(false);
-      startConversation();
     }
   };
 
   const startQuiz = () => {
     setIsQuizMode(true);
     setCurrentQuiz(0);
-    if (!isMuted) {
-      startConversation();
-    }
   };
 
   const handleQuizAnswer = (answer: string) => {
@@ -199,10 +194,6 @@ const LessonScreen = () => {
 
     const isCorrect = answer === QUIZ_DATA.quiz[currentQuiz].correct;
     setFeedback(isCorrect ? "Correct!" : "Not quite. Let's try the next one.");
-
-    if (!isMuted) {
-      startConversation();
-    }
 
     setTimeout(() => {
       setFeedback('');
