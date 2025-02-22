@@ -33,6 +33,7 @@ const TutorPersonalitySection = ({
             description={personality.description}
             iconName={personality.iconName}
             color={personality.color}
+            name={personality.name}
             isSelected={selectedPersonality === personality.id}
             onSelect={() => {
               onPersonalitySelect(personality.id);

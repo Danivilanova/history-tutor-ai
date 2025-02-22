@@ -14,6 +14,7 @@ export interface GeneratedContent {
 
 export interface TutorAgent {
   id: string;
+  name: string;
   prompt: string;
   firstMessage: string;
 }

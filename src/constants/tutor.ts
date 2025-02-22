@@ -30,6 +30,7 @@ export const tutorPersonalities = [
   {
     id: 'friendly',
     title: 'Friendly',
+    name: 'Sarah',
     description: 'Warm and encouraging, perfect for a supportive learning experience',
     iconName: 'Smile',
     color: '#6B4EFF',
@@ -38,6 +39,7 @@ export const tutorPersonalities = [
   {
     id: 'strict',
     title: 'Strict',
+    name: 'Dr. Thompson',
     description: 'Focused and disciplined, ideal for structured learning',
     iconName: 'Shield',
     color: '#1A1F2C',
@@ -46,6 +48,7 @@ export const tutorPersonalities = [
   {
     id: 'funny',
     title: 'Funny',
+    name: 'Alex',
     description: 'Light-hearted and engaging, making learning fun and memorable',
     iconName: 'Laugh',
     color: '#F97316',

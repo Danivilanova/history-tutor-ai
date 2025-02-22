@@ -49,15 +49,15 @@ export function useLesson(selectedAgent: TutorAgent, sections?: any[]) {
         return `${section.title}:\n${section.content}`;
       }).join('\n\n');
 
-      // Enhance the agent's prompt with lesson content
+      // Enhance the agent's prompt with lesson content and name
       const enhancedPrompt = `
 ${selectedAgent.prompt}
 
-Here is the lesson content you will be teaching:
+I am ${selectedAgent.name}, and here is the lesson content I will be teaching:
 
 ${lessonContent}
 
-Remember to teach this content in your assigned style while maintaining accuracy. Break down complex concepts and encourage questions.
+Remember to teach this content in my assigned style while maintaining accuracy. Break down complex concepts and encourage questions. Always refer to myself as ${selectedAgent.name} when introducing myself or when it feels natural in conversation.
 `;
 
       const conversationId = await conversation.startSession({
