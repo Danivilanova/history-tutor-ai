@@ -1,10 +1,11 @@
 
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Send } from "lucide-react";
 import LessonCard from './LessonCard';
-import DynamicInput from './DynamicInput';
-import { useQuery } from '@tanstack/react-query';
-import { ArrowRight } from 'lucide-react';
-import { supabase } from "@/integrations/supabase/client";
 
 interface LessonSectionProps {
   selectedPersonality: string | null;
@@ -17,69 +18,85 @@ const LessonSection = ({
   onGenerateLesson,
   onStartLesson
 }: LessonSectionProps) => {
-  const { data: lessons, isLoading } = useQuery({
-    queryKey: ['lessons'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('lessons')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      return data;
+  const [customTopic, setCustomTopic] = useState('');
+  const navigate = useNavigate();
+
+  const defaultLessons = [
+    {
+      title: "The Fall of Rome",
+      description: "Explore the complex factors that led to the collapse of one of history's greatest empires.",
+      duration: "30 mins"
+    },
+    {
+      title: "Ancient Egyptian Pyramids",
+      description: "Discover the engineering marvels and mysteries behind these iconic structures.",
+      duration: "25 mins"
+    },
+    {
+      title: "The Renaissance",
+      description: "Learn about the cultural rebirth that transformed Europe and shaped modern thinking.",
+      duration: "35 mins"
     }
-  });
+  ];
+
+  const handleStartLesson = (title: string) => {
+    onStartLesson(title);
+    navigate('/lesson', { 
+      state: { 
+        title,
+        personality: selectedPersonality 
+      }
+    });
+  };
+
+  const handleGenerateLesson = () => {
+    if (customTopic.trim()) {
+      onGenerateLesson(customTopic);
+      navigate('/lesson', { 
+        state: { 
+          title: customTopic,
+          personality: selectedPersonality 
+        }
+      });
+    }
+  };
 
   return (
-    <div className="space-y-8 relative">
-      {!selectedPersonality && (
-        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-xl">
-          <div className="text-center p-4">
-            <p className="text-lg font-medium mb-2">Select a tutor personality first</p>
-            <ArrowRight className="h-6 w-6 mx-auto text-primary animate-bounce" />
-          </div>
-        </div>
-      )}
-      
-      <div>
-        <div className="flex flex-wrap items-center gap-2 mb-6">
-          <Badge variant="secondary" className="bg-primary/10 text-primary whitespace-nowrap">
-            Step 2
-          </Badge>
-          <h2 className="text-xl sm:text-2xl font-semibold">Choose Your Learning Path</h2>
-        </div>
-        <DynamicInput onGenerate={onGenerateLesson} />
+    <div className="rounded-xl bg-gradient-to-b from-primary/5 to-background p-4 sm:p-8 border animate-fade-in">
+      <div className="flex flex-wrap items-center gap-2 mb-6">
+        <Badge variant="secondary" className="bg-primary/10 text-primary whitespace-nowrap">
+          Step 2
+        </Badge>
+        <h2 className="text-xl sm:text-2xl font-semibold">Choose Your Lesson</h2>
       </div>
 
-      <div>
-        <div className="flex flex-wrap items-center gap-2 mb-6">
-          <Badge variant="secondary" className="bg-primary/10 text-primary">
-            Or
-          </Badge>
-          <h2 className="text-xl sm:text-2xl font-semibold">Choose from Featured Lessons</h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8">
+        {defaultLessons.map((lesson) => (
+          <LessonCard
+            key={lesson.title}
+            {...lesson}
+            onStart={() => handleStartLesson(lesson.title)}
+          />
+        ))}
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+        <div className="flex-1 w-full">
+          <Input
+            placeholder="Or enter a custom historical topic..."
+            value={customTopic}
+            onChange={(e) => setCustomTopic(e.target.value)}
+            className="bg-background"
+          />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          {isLoading ? (
-            // Loading state with skeleton cards
-            Array.from({ length: 4 }).map((_, index) => (
-              <div key={index} className="animate-pulse bg-primary/5 rounded-lg h-[240px]" />
-            ))
-          ) : lessons && lessons.length > 0 ? (
-            lessons.map((lesson) => (
-              <LessonCard
-                key={lesson.id}
-                title={lesson.title}
-                difficulty={lesson.difficulty}
-                onStart={() => onStartLesson(lesson.title)}
-                backgroundImage={lesson.background_image || undefined}
-              />
-            ))
-          ) : (
-            <div className="col-span-full text-center text-muted-foreground">
-              No lessons available
-            </div>
-          )}
-        </div>
+        <Button
+          onClick={handleGenerateLesson}
+          disabled={!customTopic.trim()}
+          className="w-full sm:w-auto whitespace-nowrap"
+        >
+          Generate Lesson
+          <Send className="w-4 h-4 ml-2" />
+        </Button>
       </div>
     </div>
   );
