@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Card } from "@/components/ui/card";
@@ -184,7 +185,6 @@ const LessonScreen = () => {
       endConversation();
     } else if (isMuted) {
       setIsMuted(false);
-      startConversation();
     }
   };
 
