@@ -1,7 +1,9 @@
 
 import { FC } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Check, X } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface QuizContentProps {
   isComplete: boolean;
@@ -34,6 +36,8 @@ const QuizContent: FC<QuizContentProps> = ({
   }
 
   if (currentQuiz < quiz.length) {
+    const isCorrectFeedback = feedback === "Correct!";
+    
     return (
       <div className="text-center animate-fade-in">
         <h3 className="text-xl mb-6">{quiz[currentQuiz].question}</h3>
@@ -50,7 +54,17 @@ const QuizContent: FC<QuizContentProps> = ({
           ))}
         </div>
         {feedback && (
-          <p className="mt-4 text-lg animate-fade-in">{feedback}</p>
+          <div className={cn(
+            "mt-4 flex items-center justify-center gap-2 text-lg animate-fade-in",
+            isCorrectFeedback ? "text-green-600" : "text-red-600"
+          )}>
+            {isCorrectFeedback ? (
+              <Check className="h-6 w-6 text-green-600" />
+            ) : (
+              <X className="h-6 w-6 text-red-600" />
+            )}
+            <p>{feedback}</p>
+          </div>
         )}
       </div>
     );
