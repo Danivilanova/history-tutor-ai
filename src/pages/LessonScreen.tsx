@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useLocation } from 'react-router-dom';
 import { useConversation } from '@11labs/react';
@@ -99,16 +100,17 @@ const LessonScreen = () => {
   const [volume, setVolume] = useState(0.5);
   const [feedback, setFeedback] = useState('');
   const [isComplete, setIsComplete] = useState(false);
+  const [isConversationStarted, setIsConversationStarted] = useState(false);
 
   const tutorPersonality = (location.state?.personality || 'friendly') as keyof typeof TUTOR_AGENTS;
   const selectedAgent = TUTOR_AGENTS[tutorPersonality];
 
   const conversation = useConversation({
     onConnect: () => {
-      console.log("Connected to ElevenLabs with personality:", tutorPersonality);
+      console.log("Connected to ElevenLabs");
     },
     onDisconnect: () => {
-      console.log("Disconnected from ElevenLabs, was speaking:", isSpeaking);
+      console.log("Disconnected from ElevenLabs");
       setIsSpeaking(false);
     },
     onMessage: (message) => {
@@ -121,20 +123,14 @@ const LessonScreen = () => {
   });
 
   const startConversation = async () => {
-    console.log('Starting conversation...');
     try {
       const hasPermission = await requestMicrophonePermission()
-      console.log('Microphone permission:', hasPermission);
-      
       if (!hasPermission) {
-        console.warn('Microphone permission denied');
         toast.error("Microphone permission is required for voice interaction");
         return;
       }
 
-      console.log('Requesting signed URL for agent:', selectedAgent.id);
       const signedUrl = await getSignedUrl(selectedAgent.id);
-      console.log('Got signed URL, starting session...');
 
       const conversationId = await conversation.startSession({
         signedUrl,
@@ -148,10 +144,9 @@ const LessonScreen = () => {
         }
       });
 
-      console.log('Started conversation:', conversationId, 'with agent:', selectedAgent.id);
+      setIsConversationStarted(true);
       setIsSpeaking(true);
       conversation.setVolume({ volume });
-      console.log('Set initial volume to:', volume);
     } catch (error) {
       console.error('Failed to start conversation:', error);
       toast.error('Failed to start voice interaction');
@@ -159,12 +154,11 @@ const LessonScreen = () => {
   };
 
   const endConversation = async () => {
-    console.log('Ending conversation...');
     try {
       if (conversation) {
         await conversation.endSession();
-        console.log('Successfully ended conversation');
         setIsSpeaking(false);
+        setIsConversationStarted(false);
       }
     } catch (error) {
       console.error('Failed to end conversation:', error);
@@ -172,33 +166,23 @@ const LessonScreen = () => {
   };
 
   useEffect(() => {
-    console.log('Initial mount effect running, isMuted:', isMuted);
-    if (!isMuted) {
-      startConversation();
-    }
-
     return () => {
-      console.log('Component unmounting, cleaning up conversation');
       endConversation();
     };
   }, []);
 
   useEffect(() => {
     if (conversation) {
-      console.log('Setting volume to:', volume);
       conversation.setVolume({ volume });
     }
   }, [volume]);
 
   const handleVolumeChange = (newVolume: number) => {
-    console.log('Volume change requested:', newVolume);
     setVolume(newVolume);
     if (newVolume === 0) {
-      console.log('Volume set to 0, muting...');
       setIsMuted(true);
       endConversation();
     } else if (isMuted) {
-      console.log('Unmuting, restarting conversation...');
       setIsMuted(false);
       startConversation();
     }
@@ -284,36 +268,48 @@ const LessonScreen = () => {
           </div>
         </div>
 
-        <Card className="flex-1 flex flex-col relative overflow-hidden backdrop-blur-sm bg-card/80 border-primary/10 animate-fade-in-scale mt-0">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/0 via-primary/20 to-primary/0" />
-
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10">
-            <SpeakingIndicator isActive={isSpeaking} />
+        {!isConversationStarted ? (
+          <div className="flex-1 flex items-center justify-center">
+            <Button 
+              onClick={startConversation}
+              size="lg"
+              className="animate-pulse"
+            >
+              Start Lesson with AI Tutor
+            </Button>
           </div>
+        ) : (
+          <Card className="flex-1 flex flex-col relative overflow-hidden backdrop-blur-sm bg-card/80 border-primary/10 animate-fade-in-scale mt-0">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/0 via-primary/20 to-primary/0" />
 
-          <div className="flex-1 flex items-center justify-center p-4">
-            {!isQuizMode && sections && sections[currentSlide] ? (
-              <SlideContent
-                text={sections[currentSlide].generated_content?.length > 0
-                  ? sections[currentSlide].generated_content[0].generated_text
-                  : sections[currentSlide].content}
-                image={sections[currentSlide].generated_content?.length > 0
-                  ? sections[currentSlide].generated_content[0].generated_image_url
-                  : undefined}
-              />
-            ) : (
-              <QuizContent
-                isComplete={isComplete}
-                currentQuiz={currentQuiz}
-                quiz={QUIZ_DATA.quiz}
-                feedback={feedback}
-                onAnswerSubmit={handleQuizAnswer}
-              />
-            )}
-          </div>
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10">
+              <SpeakingIndicator isActive={isSpeaking} />
+            </div>
 
-          <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary/0 via-primary/20 to-primary/0" />
-        </Card>
+            <div className="flex-1 flex items-center justify-center p-4">
+              {!isQuizMode && sections && sections[currentSlide] ? (
+                <SlideContent
+                  text={sections[currentSlide].generated_content?.length > 0
+                    ? sections[currentSlide].generated_content[0].generated_text
+                    : sections[currentSlide].content}
+                  image={sections[currentSlide].generated_content?.length > 0
+                    ? sections[currentSlide].generated_content[0].generated_image_url
+                    : undefined}
+                />
+              ) : (
+                <QuizContent
+                  isComplete={isComplete}
+                  currentQuiz={currentQuiz}
+                  quiz={QUIZ_DATA.quiz}
+                  feedback={feedback}
+                  onAnswerSubmit={handleQuizAnswer}
+                />
+              )}
+            </div>
+
+            <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary/0 via-primary/20 to-primary/0" />
+          </Card>
+        )}
       </div>
     </div>
   );
