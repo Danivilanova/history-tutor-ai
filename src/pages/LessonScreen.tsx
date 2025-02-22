@@ -23,6 +23,27 @@ interface GeneratedContent {
   generated_image_url: string;
 }
 
+// Mock quiz data - this would ideally come from the database in a real implementation
+const QUIZ_DATA = {
+  quiz: [
+    {
+      question: "When did the Western Roman Empire officially end?",
+      options: ["476 AD", "410 AD", "455 AD", "500 AD"],
+      correct: "476 AD"
+    },
+    {
+      question: "Which Germanic chieftain deposed the last Roman emperor?",
+      options: ["Odoacer", "Alaric", "Attila", "Gaiseric"],
+      correct: "Odoacer"
+    },
+    {
+      question: "What percentage of Rome's population were slaves by the 2nd century AD?",
+      options: ["30-40%", "10-20%", "50-60%", "70-80%"],
+      correct: "30-40%"
+    }
+  ]
+};
+
 const LessonScreen = () => {
   const location = useLocation();
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -152,9 +173,9 @@ const LessonScreen = () => {
   };
 
   const handleQuizAnswer = (answer: string) => {
-    if (currentQuiz >= SAMPLE_LESSON.quiz.length) return;
+    if (currentQuiz >= QUIZ_DATA.quiz.length) return;
     
-    const isCorrect = answer === SAMPLE_LESSON.quiz[currentQuiz].correct;
+    const isCorrect = answer === QUIZ_DATA.quiz[currentQuiz].correct;
     setFeedback(isCorrect ? "Correct!" : "Not quite. Let's try the next one.");
     
     if (!isMuted) {
@@ -163,7 +184,7 @@ const LessonScreen = () => {
     
     setTimeout(() => {
       setFeedback('');
-      if (currentQuiz < SAMPLE_LESSON.quiz.length - 1) {
+      if (currentQuiz < QUIZ_DATA.quiz.length - 1) {
         setCurrentQuiz(prev => prev + 1);
       } else {
         setIsComplete(true);
@@ -195,7 +216,7 @@ const LessonScreen = () => {
   const currentProgress = isQuizMode 
     ? (sections?.length || 0) + currentQuiz + 1 
     : currentSlide + 1;
-  const totalSteps = (sections?.length || 0) + (SAMPLE_LESSON.quiz?.length || 0);
+  const totalSteps = (sections?.length || 0) + QUIZ_DATA.quiz.length;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5">
@@ -241,7 +262,7 @@ const LessonScreen = () => {
               <QuizContent 
                 isComplete={isComplete}
                 currentQuiz={currentQuiz}
-                quiz={SAMPLE_LESSON.quiz}
+                quiz={QUIZ_DATA.quiz}
                 feedback={feedback}
                 onAnswerSubmit={handleQuizAnswer}
               />
