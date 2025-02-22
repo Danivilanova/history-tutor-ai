@@ -1,196 +1,37 @@
-import { useState, useEffect } from 'react';
-import { toast } from 'sonner';
+
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'react-router-dom';
-import { useConversation } from '@11labs/react';
 import SpeakingIndicator from '@/components/SpeakingIndicator';
 import LessonHeader from '@/components/lesson/LessonHeader';
 import SlideContent from '@/components/lesson/SlideContent';
 import QuizContent from '@/components/lesson/QuizContent';
 import { supabase } from "@/integrations/supabase/client";
-
-interface LessonSection {
-  id: string;
-  title: string;
-  content: string;
-  section_type: 'intro' | 'point' | 'conclusion';
-  order_index: number;
-}
-
-interface GeneratedContent {
-  generated_text: string;
-  generated_image_url: string;
-}
-
-const QUIZ_DATA = {
-  quiz: [
-    {
-      question: "When did the Western Roman Empire officially end?",
-      options: ["476 AD", "410 AD", "455 AD", "500 AD"],
-      correct: "476 AD"
-    },
-    {
-      question: "Which Germanic chieftain deposed the last Roman emperor?",
-      options: ["Odoacer", "Alaric", "Attila", "Gaiseric"],
-      correct: "Odoacer"
-    },
-    {
-      question: "What percentage of Rome's population were slaves by the 2nd century AD?",
-      options: ["30-40%", "10-20%", "50-60%", "70-80%"],
-      correct: "30-40%"
-    }
-  ]
-};
-
-const TUTOR_AGENTS = {
-  funny: {
-    id: "XgEPMPMknaQUnTTle5TN",
-    prompt: "You are a fun and entertaining tutor who uses humor to make learning engaging. You make jokes and keep the mood light while teaching history effectively.",
-    firstMessage: "Hey there! Ready to make history fun? Let's dive into this exciting topic with some laughs along the way!",
-  },
-  strict: {
-    id: "CF9oLSxkWjupoRyRJQg0",
-    prompt: "You are a strict and disciplined tutor who emphasizes accuracy and attention to detail. You maintain high standards while teaching history.",
-    firstMessage: "Welcome to your history lesson. We'll proceed systematically through this important topic. Pay close attention.",
-  },
-  friendly: {
-    id: "vAElDozxD5rk5YtoPvRw",
-    prompt: "You are a friendly and supportive tutor who makes history accessible and engaging. You encourage questions and create a comfortable learning environment.",
-    firstMessage: "Hello! I'm excited to explore this fascinating historical topic with you. Let's learn together!",
-  }
-};
-
-async function requestMicrophonePermission() {
-  try {
-    await navigator.mediaDevices.getUserMedia({ audio: true })
-    return true
-  } catch {
-    console.error('Microphone permission denied')
-    return false
-  }
-}
-
-async function getSignedUrl(agentId: string): Promise<string> {
-  console.log('Requesting signed URL for agent:', agentId);
-  const { data, error } = await supabase.functions.invoke(`get-signed-url?agentId=${agentId}`, {
-    method: 'GET',
-  });
-
-  if (error) {
-    console.error('Error getting signed URL:', error);
-    throw new Error('Failed to get signed URL');
-  }
-  if (!data || !data.signedUrl) {
-    console.error('Invalid response data:', data);
-    throw new Error('Invalid response: signedUrl not found');
-  }
-  console.log('Successfully got signed URL');
-  return data.signedUrl;
-}
+import { useLesson } from '@/hooks/useLesson';
+import { TUTOR_AGENTS, QUIZ_DATA } from '@/constants/lesson';
+import type { LessonSection, GeneratedContent } from '@/types/lesson';
 
 const LessonScreen = () => {
   const location = useLocation();
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [isQuizMode, setIsQuizMode] = useState(false);
-  const [currentQuiz, setCurrentQuiz] = useState(0);
-  const [isMuted, setIsMuted] = useState(false);
-  const [volume, setVolume] = useState(0.5);
-  const [feedback, setFeedback] = useState('');
-  const [isComplete, setIsComplete] = useState(false);
-  const [isConversationStarted, setIsConversationStarted] = useState(false);
-
   const tutorPersonality = (location.state?.personality || 'friendly') as keyof typeof TUTOR_AGENTS;
   const selectedAgent = TUTOR_AGENTS[tutorPersonality];
-
-  const conversation = useConversation({
-    onConnect: () => {
-      console.log("Connected to ElevenLabs");
-    },
-    onDisconnect: () => {
-      console.log("Disconnected from ElevenLabs");
-      setIsSpeaking(false);
-    },
-    onMessage: (message) => {
-      console.log("Message from AI:", message);
-    },
-    onError: (error) => {
-      console.error("ElevenLabs error:", error);
-      toast.error("Error with voice interaction");
-    }
-  });
-
-  const startConversation = async () => {
-    try {
-      const hasPermission = await requestMicrophonePermission()
-      if (!hasPermission) {
-        toast.error("Microphone permission is required for voice interaction");
-        return;
-      }
-
-      const signedUrl = await getSignedUrl(selectedAgent.id);
-
-      const conversationId = await conversation.startSession({
-        signedUrl,
-        overrides: {
-          agent: {
-            prompt: {
-              prompt: selectedAgent.prompt
-            },
-            firstMessage: selectedAgent.firstMessage
-          }
-        }
-      });
-
-      setIsConversationStarted(true);
-      setIsSpeaking(true);
-      conversation.setVolume({ volume });
-    } catch (error) {
-      console.error('Failed to start conversation:', error);
-      toast.error('Failed to start voice interaction');
-    }
-  };
-
-  useEffect(() => {
-    if (conversation) {
-      conversation.setVolume({ volume });
-    }
-  }, [volume]);
-
-  const handleVolumeChange = (newVolume: number) => {
-    setVolume(newVolume);
-    if (newVolume === 0) {
-      setIsMuted(true);
-    } else if (isMuted) {
-      setIsMuted(false);
-    }
-  };
-
-  const startQuiz = () => {
-    setIsQuizMode(true);
-    setCurrentQuiz(0);
-  };
-
-  const handleQuizAnswer = (answer: string) => {
-    if (currentQuiz >= QUIZ_DATA.quiz.length) return;
-
-    const isCorrect = answer === QUIZ_DATA.quiz[currentQuiz].correct;
-    setFeedback(isCorrect ? "Correct!" : "Not quite. Let's try the next one.");
-
-    setTimeout(() => {
-      setFeedback('');
-      if (currentQuiz < QUIZ_DATA.quiz.length - 1) {
-        setCurrentQuiz(prev => prev + 1);
-      } else {
-        setIsComplete(true);
-        toast.success("Congratulations! You've completed the lesson!");
-      }
-    }, 3000);
-  };
-
   const lessonTitle = location.state?.title || "The Fall of Rome";
+
+  const {
+    currentSlide,
+    isSpeaking,
+    isQuizMode,
+    currentQuiz,
+    isMuted,
+    volume,
+    feedback,
+    isComplete,
+    isConversationStarted,
+    startConversation,
+    handleVolumeChange,
+    handleQuizAnswer,
+  } = useLesson(selectedAgent);
 
   const { data: sections, isLoading } = useQuery({
     queryKey: ['lessonSections', lessonTitle],
@@ -234,7 +75,7 @@ const LessonScreen = () => {
             title={lessonTitle}
             isMuted={isMuted}
             volume={volume}
-            onMuteToggle={() => setIsMuted(!isMuted)}
+            onMuteToggle={() => handleVolumeChange(isMuted ? volume : 0)}
             onVolumeChange={handleVolumeChange}
           />
 
