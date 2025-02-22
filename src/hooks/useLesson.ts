@@ -89,7 +89,12 @@ Remember to teach this content in my assigned style while maintaining accuracy. 
             },
             firstMessage: selectedAgent.firstMessage
           }
-        }
+        },
+        clientTools: {
+          generateSlide: async ({ message }) => {
+            console.log(message);
+          }
+        },
       });
 
       console.log('Conversation started with ID:', conversationId);
