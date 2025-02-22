@@ -15,7 +15,7 @@ interface LessonCardProps {
 const LessonCard: FC<LessonCardProps> = ({ title, difficulty, onStart, backgroundImage }) => {
   return (
     <Card 
-      className="glass transform transition-all duration-300 hover:scale-105 animate-fade-in-scale overflow-hidden relative min-h-[240px] group"
+      className="glass transform transition-all duration-300 hover:scale-105 animate-fade-in-scale overflow-hidden relative min-h-[240px] group flex flex-col"
       style={{
         backgroundImage: `linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.6)), url(${backgroundImage})`,
         backgroundSize: 'cover',
@@ -27,10 +27,10 @@ const LessonCard: FC<LessonCardProps> = ({ title, difficulty, onStart, backgroun
           {difficulty}
         </Badge>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-grow">
         <h3 className="text-xl font-semibold text-white">{title}</h3>
       </CardContent>
-      <CardFooter className="mt-auto">
+      <CardFooter>
         <Button 
           onClick={onStart} 
           className="w-full bg-white/20 hover:bg-white/30 backdrop-blur-sm group-hover:bg-primary transition-all"
