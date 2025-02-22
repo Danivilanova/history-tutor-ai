@@ -1,4 +1,3 @@
-
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useQuery } from '@tanstack/react-query';
@@ -17,21 +16,6 @@ const LessonScreen = () => {
   const tutorPersonality = (location.state?.personality || 'friendly') as keyof typeof TUTOR_AGENTS;
   const selectedAgent = TUTOR_AGENTS[tutorPersonality];
   const lessonTitle = location.state?.title || "The Fall of Rome";
-
-  const {
-    currentSlide,
-    isSpeaking,
-    isQuizMode,
-    currentQuiz,
-    isMuted,
-    volume,
-    feedback,
-    isComplete,
-    isConversationStarted,
-    startConversation,
-    handleVolumeChange,
-    handleQuizAnswer,
-  } = useLesson(selectedAgent);
 
   const { data: sections, isLoading } = useQuery({
     queryKey: ['lessonSections', lessonTitle],
@@ -53,6 +37,21 @@ const LessonScreen = () => {
       return data as (LessonSection & { generated_content: GeneratedContent[] })[];
     }
   });
+
+  const {
+    currentSlide,
+    isSpeaking,
+    isQuizMode,
+    currentQuiz,
+    isMuted,
+    volume,
+    feedback,
+    isComplete,
+    isConversationStarted,
+    startConversation,
+    handleVolumeChange,
+    handleQuizAnswer,
+  } = useLesson(selectedAgent, sections);
 
   if (isLoading) {
     return (

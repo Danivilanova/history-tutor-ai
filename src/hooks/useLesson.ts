@@ -6,7 +6,7 @@ import { getSignedUrl, requestMicrophonePermission } from '@/utils/lessonUtils';
 import { TutorAgent } from '@/types/lesson';
 import { QUIZ_DATA } from '@/constants/lesson';
 
-export function useLesson(selectedAgent: TutorAgent) {
+export function useLesson(selectedAgent: TutorAgent, sections?: any[]) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isQuizMode, setIsQuizMode] = useState(false);
@@ -44,12 +44,31 @@ export function useLesson(selectedAgent: TutorAgent) {
 
       const signedUrl = await getSignedUrl(selectedAgent.id);
 
+      // Create a comprehensive lesson content string
+      const lessonContent = sections?.map(section => {
+        const content = section.generated_content?.length > 0
+          ? section.generated_content[0].generated_text
+          : section.content;
+        return `${section.title}:\n${content}`;
+      }).join('\n\n');
+
+      // Enhance the agent's prompt with lesson content
+      const enhancedPrompt = `
+${selectedAgent.prompt}
+
+Here is the lesson content you will be teaching:
+
+${lessonContent}
+
+Remember to teach this content in your assigned style while maintaining accuracy. Break down complex concepts and encourage questions.
+`;
+
       const conversationId = await conversation.startSession({
         signedUrl,
         overrides: {
           agent: {
             prompt: {
-              prompt: selectedAgent.prompt
+              prompt: enhancedPrompt
             },
             firstMessage: selectedAgent.firstMessage
           }
