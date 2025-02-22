@@ -9,21 +9,32 @@ interface LessonCardProps {
   title: string;
   difficulty: string;
   onStart: () => void;
+  backgroundImage?: string;
 }
 
-const LessonCard: FC<LessonCardProps> = ({ title, difficulty, onStart }) => {
+const LessonCard: FC<LessonCardProps> = ({ title, difficulty, onStart, backgroundImage }) => {
   return (
-    <Card className="glass transform transition-all duration-300 hover:scale-105 animate-fade-in-scale">
+    <Card 
+      className="glass transform transition-all duration-300 hover:scale-105 animate-fade-in-scale overflow-hidden relative min-h-[240px] group"
+      style={{
+        backgroundImage: `linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.6)), url(${backgroundImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center'
+      }}
+    >
       <CardHeader>
-        <Badge variant="secondary" className="w-fit bg-primary/10 text-primary hover:bg-primary/20">
+        <Badge variant="secondary" className="w-fit bg-white/80 text-primary hover:bg-white/90 transition-all backdrop-blur-sm">
           {difficulty}
         </Badge>
       </CardHeader>
       <CardContent>
-        <h3 className="text-xl font-semibold">{title}</h3>
+        <h3 className="text-xl font-semibold text-white">{title}</h3>
       </CardContent>
-      <CardFooter>
-        <Button onClick={onStart} className="w-full">
+      <CardFooter className="mt-auto">
+        <Button 
+          onClick={onStart} 
+          className="w-full bg-white/20 hover:bg-white/30 backdrop-blur-sm group-hover:bg-primary transition-all"
+        >
           <PlayCircle className="mr-2 h-5 w-5" />
           Start Lesson
         </Button>

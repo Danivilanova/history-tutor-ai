@@ -6,10 +6,30 @@ import DynamicInput from '../components/DynamicInput';
 import { Badge } from "@/components/ui/badge";
 
 const predefinedLessons = [
-  { id: 1, title: "The Fall of Rome", difficulty: "Beginner" },
-  { id: 2, title: "Ancient Egyptian Pyramids", difficulty: "Intermediate" },
-  { id: 3, title: "Renaissance Art", difficulty: "Advanced" },
-  { id: 4, title: "Industrial Revolution", difficulty: "Intermediate" },
+  { 
+    id: 1, 
+    title: "The Fall of Rome", 
+    difficulty: "Beginner",
+    backgroundImage: "https://images.unsplash.com/photo-1525874684015-58379d421a52?q=80&w=800&auto=format&fit=crop"
+  },
+  { 
+    id: 2, 
+    title: "Ancient Egyptian Pyramids", 
+    difficulty: "Intermediate",
+    backgroundImage: "https://images.unsplash.com/photo-1503177119275-0aa32b3a9368?q=80&w=800&auto=format&fit=crop"
+  },
+  { 
+    id: 3, 
+    title: "Renaissance Art", 
+    difficulty: "Advanced",
+    backgroundImage: "https://images.unsplash.com/photo-1544413660-299165566b1d?q=80&w=800&auto=format&fit=crop"
+  },
+  { 
+    id: 4, 
+    title: "Industrial Revolution", 
+    difficulty: "Intermediate",
+    backgroundImage: "https://images.unsplash.com/photo-1569954942719-c59595ea3667?q=80&w=800&auto=format&fit=crop"
+  },
 ];
 
 const Index = () => {
@@ -26,7 +46,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen py-12 px-4 sm:px-6">
+    <div className="min-h-screen py-12 px-4 sm:px-6 bg-gradient-to-b from-background via-background to-primary/5">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16 animate-fade-in">
           <Badge variant="secondary" className="mb-4 bg-primary/10 text-primary hover:bg-primary/20 animate-float">
@@ -54,6 +74,7 @@ const Index = () => {
                 title={lesson.title}
                 difficulty={lesson.difficulty}
                 onStart={() => handleStartLesson(lesson.title)}
+                backgroundImage={lesson.backgroundImage}
               />
             ))}
           </div>
