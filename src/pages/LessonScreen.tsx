@@ -153,24 +153,6 @@ const LessonScreen = () => {
     }
   };
 
-  const endConversation = async () => {
-    try {
-      if (conversation) {
-        await conversation.endSession();
-        setIsSpeaking(false);
-        setIsConversationStarted(false);
-      }
-    } catch (error) {
-      console.error('Failed to end conversation:', error);
-    }
-  };
-
-  useEffect(() => {
-    return () => {
-      endConversation();
-    };
-  }, []);
-
   useEffect(() => {
     if (conversation) {
       conversation.setVolume({ volume });
