@@ -1,7 +1,6 @@
 
 import { FC } from 'react';
 import { PlayCircle } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,11 +13,9 @@ interface LessonCardProps {
 }
 
 const LessonCard: FC<LessonCardProps> = ({ title, difficulty, onStart, backgroundImage }) => {
-  const navigate = useNavigate();
-
   const handleStart = () => {
-    onStart();
-    navigate('/lesson');
+    console.log('LessonCard - Starting lesson:', title);
+    onStart(); // Let the parent component handle navigation
   };
 
   return (
