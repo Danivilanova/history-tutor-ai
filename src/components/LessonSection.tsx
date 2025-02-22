@@ -20,6 +20,8 @@ const LessonSection = ({
 }: LessonSectionProps) => {
   const navigate = useNavigate();
   
+  console.log('LessonSection - Selected Personality:', selectedPersonality);
+  
   const { data: lessons, isLoading } = useQuery({
     queryKey: ['lessons'],
     queryFn: async () => {
@@ -34,13 +36,21 @@ const LessonSection = ({
   });
 
   const handleStartLesson = (title: string) => {
+    console.log('Starting lesson with:', { title, personality: selectedPersonality });
     onStartLesson(title);
-    navigate(`/lesson?title=${encodeURIComponent(title)}&personality=${selectedPersonality}`);
+    const searchParams = new URLSearchParams();
+    searchParams.set('title', title);
+    searchParams.set('personality', selectedPersonality || 'friendly');
+    navigate(`/lesson?${searchParams.toString()}`);
   };
 
   const handleGenerateCustomLesson = (topic: string) => {
+    console.log('Generating custom lesson with:', { topic, personality: selectedPersonality });
     onGenerateLesson(topic);
-    navigate(`/lesson?title=${encodeURIComponent(topic)}&personality=${selectedPersonality}`);
+    const searchParams = new URLSearchParams();
+    searchParams.set('title', topic);
+    searchParams.set('personality', selectedPersonality || 'friendly');
+    navigate(`/lesson?${searchParams.toString()}`);
   };
 
   return (
