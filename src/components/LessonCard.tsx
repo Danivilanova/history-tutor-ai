@@ -1,7 +1,6 @@
 
 import { FC } from 'react';
 import { PlayCircle } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,13 +13,6 @@ interface LessonCardProps {
 }
 
 const LessonCard: FC<LessonCardProps> = ({ title, difficulty, onStart, backgroundImage }) => {
-  const navigate = useNavigate();
-
-  const handleStart = () => {
-    onStart();
-    navigate('/lesson');
-  };
-
   return (
     <Card 
       className="glass transform transition-all duration-300 hover:scale-105 animate-fade-in-scale overflow-hidden relative min-h-[240px] group flex flex-col"
@@ -40,7 +32,7 @@ const LessonCard: FC<LessonCardProps> = ({ title, difficulty, onStart, backgroun
       </CardContent>
       <CardFooter>
         <Button 
-          onClick={handleStart}
+          onClick={onStart} 
           className="w-full bg-white/20 hover:bg-white/30 backdrop-blur-sm group-hover:bg-primary transition-all"
         >
           <PlayCircle className="mr-2 h-5 w-5" />
