@@ -72,6 +72,7 @@ async function requestMicrophonePermission() {
 }
 
 async function getSignedUrl(agentId: string): Promise<string> {
+  console.log('Requesting signed URL for agent:', agentId);
   const { data, error } = await supabase.functions.invoke(`get-signed-url?agentId=${agentId}`, {
     method: 'GET',
   });
@@ -81,8 +82,10 @@ async function getSignedUrl(agentId: string): Promise<string> {
     throw new Error('Failed to get signed URL');
   }
   if (!data || !data.signedUrl) {
+    console.error('Invalid response data:', data);
     throw new Error('Invalid response: signedUrl not found');
   }
+  console.log('Successfully got signed URL');
   return data.signedUrl;
 }
 
@@ -102,10 +105,10 @@ const LessonScreen = () => {
 
   const conversation = useConversation({
     onConnect: () => {
-      console.log("Connected to ElevenLabs");
+      console.log("Connected to ElevenLabs with personality:", tutorPersonality);
     },
     onDisconnect: () => {
-      console.log("Disconnected from ElevenLabs");
+      console.log("Disconnected from ElevenLabs, was speaking:", isSpeaking);
       setIsSpeaking(false);
     },
     onMessage: (message) => {
@@ -118,14 +121,20 @@ const LessonScreen = () => {
   });
 
   const startConversation = async () => {
+    console.log('Starting conversation...');
     try {
       const hasPermission = await requestMicrophonePermission()
+      console.log('Microphone permission:', hasPermission);
+      
       if (!hasPermission) {
+        console.warn('Microphone permission denied');
         toast.error("Microphone permission is required for voice interaction");
         return;
       }
 
+      console.log('Requesting signed URL for agent:', selectedAgent.id);
       const signedUrl = await getSignedUrl(selectedAgent.id);
+      console.log('Got signed URL, starting session...');
 
       const conversationId = await conversation.startSession({
         signedUrl,
@@ -139,9 +148,10 @@ const LessonScreen = () => {
         }
       });
 
-      console.log('Started conversation:', conversationId);
+      console.log('Started conversation:', conversationId, 'with agent:', selectedAgent.id);
       setIsSpeaking(true);
       conversation.setVolume({ volume });
+      console.log('Set initial volume to:', volume);
     } catch (error) {
       console.error('Failed to start conversation:', error);
       toast.error('Failed to start voice interaction');
@@ -149,9 +159,11 @@ const LessonScreen = () => {
   };
 
   const endConversation = async () => {
+    console.log('Ending conversation...');
     try {
       if (conversation) {
         await conversation.endSession();
+        console.log('Successfully ended conversation');
         setIsSpeaking(false);
       }
     } catch (error) {
@@ -160,27 +172,35 @@ const LessonScreen = () => {
   };
 
   useEffect(() => {
+    console.log('Initial mount effect running, isMuted:', isMuted);
     if (!isMuted) {
       startConversation();
     }
 
     return () => {
+      console.log('Component unmounting, cleaning up conversation');
       endConversation();
     };
   }, []);
 
   useEffect(() => {
     if (conversation) {
+      console.log('Setting volume to:', volume);
       conversation.setVolume({ volume });
     }
   }, [volume]);
 
   const handleVolumeChange = (newVolume: number) => {
+    console.log('Volume change requested:', newVolume);
     setVolume(newVolume);
     if (newVolume === 0) {
+      console.log('Volume set to 0, muting...');
       setIsMuted(true);
+      endConversation();
     } else if (isMuted) {
+      console.log('Unmuting, restarting conversation...');
       setIsMuted(false);
+      startConversation();
     }
   };
 
