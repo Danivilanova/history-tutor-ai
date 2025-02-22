@@ -100,8 +100,8 @@ Remember to:
           }
         },
         clientTools: {
-          generateSlide: async ({ message }) => {
-            console.log("Generating slide with message:", message);
+          generateSlide: async ({ text, image_description }) => {
+            console.log("Generating slide with text:", text, "and image description:", image_description);
             // The slide generation happens automatically based on the message
             // The UI will update to show the new slide
             return "Slide generated successfully";
