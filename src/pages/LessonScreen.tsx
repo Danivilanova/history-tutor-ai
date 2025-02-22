@@ -174,7 +174,7 @@ const LessonScreen = () => {
       // Request microphone access first
       const hasPermission = await requestMicrophonePermission()
       if (!hasPermission) {
-        alert("No permission")
+        toast.error("Microphone permission is required for voice interaction");
         return;
       }
 
@@ -186,6 +186,10 @@ const LessonScreen = () => {
       if (error) {
         console.error('Error getting signed URL:', error);
         throw new Error('Failed to get signed URL');
+      }
+
+      if (!data?.signedUrl) {
+        throw new Error('No signed URL received');
       }
 
       // Start the conversation with the signed URL
@@ -211,38 +215,43 @@ const LessonScreen = () => {
   };
 
   const endConversation = async () => {
-    if (!conversation) {
-      return
+    try {
+      if (conversation) {
+        await conversation.endSession();
+        setIsSpeaking(false);
+      }
+    } catch (error) {
+      console.error('Failed to end conversation:', error);
     }
-    await conversation.endSession()
-  }
+  };
 
   useEffect(() => {
-    if (sections && sections.length > 0 && currentSlide < sections.length && !isMuted) {
-      const currentSection = sections[currentSlide];
-      
-      startConversation();
+    let mounted = true;
 
-      // Comment out content generation
-      /*if (!currentSection.generated_content?.length) {
-        generateContent.mutate(currentSection.id);
-      }*/
+    if (sections && sections.length > 0 && currentSlide < sections.length && !isMuted) {
+      // Start conversation when component mounts or slide changes
+      startConversation();
     }
 
     return () => {
-      endConversation().catch(console.error);
+      mounted = false;
+      // Only end conversation when component unmounts
+      endConversation();
     };
-  }, [currentSlide, sections, isMuted]);
+  }, [currentSlide, sections]); // Remove isMuted from dependencies
 
   useEffect(() => {
-    conversation.setVolume({ volume });
+    if (conversation) {
+      conversation.setVolume({ volume });
+    }
   }, [volume]);
 
+  // Modify mute handling
   useEffect(() => {
     if (isMuted) {
-      startConversation();
-    } else {
       endConversation();
+    } else if (sections && sections.length > 0 && currentSlide < sections.length) {
+      startConversation();
     }
   }, [isMuted]);
 
