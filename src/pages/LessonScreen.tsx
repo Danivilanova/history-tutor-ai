@@ -44,6 +44,7 @@ const LessonScreen = () => {
   const [isQuizMode, setIsQuizMode] = useState(false);
   const [currentQuiz, setCurrentQuiz] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
+  const [volume, setVolume] = useState(0.5);
   const [feedback, setFeedback] = useState('');
   const [isComplete, setIsComplete] = useState(false);
 
@@ -85,6 +86,15 @@ const LessonScreen = () => {
     }, 3000);
   };
 
+  const handleVolumeChange = (newVolume: number) => {
+    setVolume(newVolume);
+    if (newVolume === 0) {
+      setIsMuted(true);
+    } else if (isMuted) {
+      setIsMuted(false);
+    }
+  };
+
   const currentProgress = isQuizMode 
     ? SAMPLE_LESSON.slides.length + currentQuiz + 1 
     : currentSlide + 1;
@@ -94,11 +104,23 @@ const LessonScreen = () => {
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5">
       <div className="max-w-4xl mx-auto relative min-h-screen p-4 flex flex-col">
         <div className="py-4 animate-fade-in">
-          <LessonHeader 
-            title={SAMPLE_LESSON.title}
-            isMuted={isMuted}
-            onMuteToggle={() => setIsMuted(!isMuted)}
-          />
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex-1">
+              <LessonHeader 
+                title={SAMPLE_LESSON.title}
+                isMuted={isMuted}
+                volume={volume}
+                onMuteToggle={() => setIsMuted(!isMuted)}
+                onVolumeChange={handleVolumeChange}
+              />
+            </div>
+            <div className="ml-4">
+              <ProgressIndicator 
+                current={currentProgress} 
+                total={totalSteps}
+              />
+            </div>
+          </div>
 
           <div className="relative h-2 bg-muted rounded-full mb-8 overflow-hidden">
             <div 
@@ -136,13 +158,6 @@ const LessonScreen = () => {
 
           <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary/0 via-primary/20 to-primary/0" />
         </Card>
-
-        <div className="absolute top-4 right-4">
-          <ProgressIndicator 
-            current={currentProgress} 
-            total={totalSteps}
-          />
-        </div>
       </div>
     </div>
   );
