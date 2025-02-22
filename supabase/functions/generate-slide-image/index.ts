@@ -1,5 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,13 +13,17 @@ serve(async (req) => {
   }
 
   const falApiKey = Deno.env.get('FAL_AI_KEY')
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')
+  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 
-  if (!falApiKey) {
+  if (!falApiKey || !supabaseUrl || !supabaseKey) {
     return new Response(
-      JSON.stringify({ error: 'FAL AI API key not configured' }),
+      JSON.stringify({ error: 'Missing required environment variables' }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     )
   }
+
+  const supabase = createClient(supabaseUrl, supabaseKey)
 
   try {
     const { image_description } = await req.json()
@@ -56,16 +61,44 @@ serve(async (req) => {
     console.log('Generated image result:', result)
 
     // FAL AI returns an array of images, we'll take the first one
-    const imageUrl = result.images[0].url
+    const generatedImageUrl = result.images[0].url
+
+    // Download the image from FAL AI
+    const imageResponse = await fetch(generatedImageUrl)
+    if (!imageResponse.ok) {
+      throw new Error('Failed to download generated image')
+    }
+
+    const imageBlob = await imageResponse.blob()
+    const fileName = `${crypto.randomUUID()}.png`
+
+    // Upload the image to Supabase Storage
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('slides')
+      .upload(fileName, imageBlob, {
+        contentType: 'image/png',
+        cacheControl: '3600'
+      })
+
+    if (uploadError) {
+      throw new Error(`Failed to upload image to storage: ${uploadError.message}`)
+    }
+
+    console.log('Successfully uploaded image:', fileName)
+
+    // Get the public URL for the uploaded image
+    const { data: { publicUrl } } = supabase.storage
+      .from('slides')
+      .getPublicUrl(fileName)
 
     return new Response(
-      JSON.stringify({ imageUrl }),
+      JSON.stringify({ imageUrl: publicUrl }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
-    console.error('Error generating image:', error)
+    console.error('Error generating or storing image:', error)
     return new Response(
-      JSON.stringify({ error: 'Failed to generate image', details: error.message }),
+      JSON.stringify({ error: 'Failed to generate or store image', details: error.message }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     )
   }
