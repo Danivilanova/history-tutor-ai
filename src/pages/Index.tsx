@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import LessonCard from '../components/LessonCard';
 import DynamicInput from '../components/DynamicInput';
+import { Badge } from "@/components/ui/badge";
 
 const predefinedLessons = [
   { id: 1, title: "The Fall of Rome", difficulty: "Beginner" },
@@ -28,9 +29,9 @@ const Index = () => {
     <div className="min-h-screen py-12 px-4 sm:px-6">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16 animate-fade-in">
-          <div className="inline-block px-3 py-1 mb-4 text-sm font-medium rounded-full bg-primary/10 text-primary animate-float">
+          <Badge variant="secondary" className="mb-4 bg-primary/10 text-primary hover:bg-primary/20 animate-float">
             Welcome to History Tutor AI
-          </div>
+          </Badge>
           <h1 className="text-4xl sm:text-5xl font-bold mb-4">
             Explore the Past, Your Way
           </h1>
