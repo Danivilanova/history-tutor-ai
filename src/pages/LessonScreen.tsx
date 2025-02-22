@@ -53,6 +53,7 @@ const LessonScreen = () => {
   const [question, setQuestion] = useState('');
   const [isMuted, setIsMuted] = useState(false);
   const [feedback, setFeedback] = useState('');
+  const [isComplete, setIsComplete] = useState(false);
 
   useEffect(() => {
     if (currentSlide < SAMPLE_LESSON.slides.length) {
@@ -72,9 +73,12 @@ const LessonScreen = () => {
   const startQuiz = () => {
     setIsQuizMode(true);
     setIsSpeaking(true);
+    setCurrentQuiz(0); // Ensure we start at the first question
   };
 
   const handleQuizAnswer = (answer: string) => {
+    if (currentQuiz >= SAMPLE_LESSON.quiz.length) return;
+    
     const isCorrect = answer === SAMPLE_LESSON.quiz[currentQuiz].correct;
     setFeedback(isCorrect ? "Correct!" : "Not quite. Let's try the next one.");
     
@@ -83,6 +87,7 @@ const LessonScreen = () => {
       if (currentQuiz < SAMPLE_LESSON.quiz.length - 1) {
         setCurrentQuiz(prev => prev + 1);
       } else {
+        setIsComplete(true);
         toast.success("Congratulations! You've completed the lesson.");
       }
     }, 3000);
@@ -101,6 +106,63 @@ const LessonScreen = () => {
     ? SAMPLE_LESSON.slides.length + currentQuiz + 1 
     : currentSlide + 1;
   const totalSteps = SAMPLE_LESSON.slides.length + SAMPLE_LESSON.quiz.length;
+
+  const renderContent = () => {
+    if (!isQuizMode) {
+      return (
+        <>
+          <div className="text-center mb-8 animate-fade-in">
+            <SpeakingIndicator isActive={isSpeaking} />
+            <p className="text-xl mt-4">{SAMPLE_LESSON.slides[currentSlide].text}</p>
+          </div>
+          {SAMPLE_LESSON.slides[currentSlide].image && (
+            <div className="w-full max-w-2xl h-64 rounded-lg overflow-hidden animate-fade-in">
+              <img 
+                src={SAMPLE_LESSON.slides[currentSlide].image} 
+                alt="Lesson illustration"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
+        </>
+      );
+    }
+
+    if (isComplete) {
+      return (
+        <div className="text-center animate-fade-in">
+          <h3 className="text-xl mb-6">Lesson Complete!</h3>
+          <Button onClick={() => navigate('/')}>Return to Home</Button>
+        </div>
+      );
+    }
+
+    if (currentQuiz < SAMPLE_LESSON.quiz.length) {
+      return (
+        <div className="text-center animate-fade-in">
+          <SpeakingIndicator isActive={isSpeaking} />
+          <h3 className="text-xl mb-6">{SAMPLE_LESSON.quiz[currentQuiz].question}</h3>
+          <div className="flex gap-4 justify-center">
+            {SAMPLE_LESSON.quiz[currentQuiz].options.map((option, index) => (
+              <Button
+                key={index}
+                onClick={() => handleQuizAnswer(option)}
+                variant="outline"
+                className="min-w-[120px]"
+              >
+                {option}
+              </Button>
+            ))}
+          </div>
+          {feedback && (
+            <p className="mt-4 text-lg animate-fade-in">{feedback}</p>
+          )}
+        </div>
+      );
+    }
+
+    return null;
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5 p-4">
@@ -130,43 +192,7 @@ const LessonScreen = () => {
         />
 
         <Card className="p-8 mb-4 min-h-[400px] flex flex-col items-center justify-center relative">
-          {!isQuizMode ? (
-            <>
-              <div className="text-center mb-8 animate-fade-in">
-                <SpeakingIndicator isActive={isSpeaking} />
-                <p className="text-xl mt-4">{SAMPLE_LESSON.slides[currentSlide].text}</p>
-              </div>
-              {SAMPLE_LESSON.slides[currentSlide].image && (
-                <div className="w-full max-w-2xl h-64 rounded-lg overflow-hidden animate-fade-in">
-                  <img 
-                    src={SAMPLE_LESSON.slides[currentSlide].image} 
-                    alt="Lesson illustration"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="text-center animate-fade-in">
-              <SpeakingIndicator isActive={isSpeaking} />
-              <h3 className="text-xl mb-6">{SAMPLE_LESSON.quiz[currentQuiz].question}</h3>
-              <div className="flex gap-4 justify-center">
-                {SAMPLE_LESSON.quiz[currentQuiz].options.map((option, index) => (
-                  <Button
-                    key={index}
-                    onClick={() => handleQuizAnswer(option)}
-                    variant="outline"
-                    className="min-w-[120px]"
-                  >
-                    {option}
-                  </Button>
-                ))}
-              </div>
-              {feedback && (
-                <p className="mt-4 text-lg animate-fade-in">{feedback}</p>
-              )}
-            </div>
-          )}
+          {renderContent()}
         </Card>
 
         <form onSubmit={handleQuestion} className="relative">
