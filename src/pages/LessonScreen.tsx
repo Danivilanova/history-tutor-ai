@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import SpeakingIndicator from '@/components/SpeakingIndicator';
 import ProgressIndicator from '@/components/ProgressIndicator';
@@ -43,7 +42,6 @@ const LessonScreen = () => {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isQuizMode, setIsQuizMode] = useState(false);
   const [currentQuiz, setCurrentQuiz] = useState(0);
-  const [question, setQuestion] = useState('');
   const [isMuted, setIsMuted] = useState(false);
   const [feedback, setFeedback] = useState('');
   const [isComplete, setIsComplete] = useState(false);
@@ -86,15 +84,6 @@ const LessonScreen = () => {
     }, 3000);
   };
 
-  const handleQuestion = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!question.trim()) return;
-    
-    setIsSpeaking(false);
-    toast.info("The AI is processing your question...");
-    setQuestion('');
-  };
-
   const currentProgress = isQuizMode 
     ? SAMPLE_LESSON.slides.length + currentQuiz + 1 
     : currentSlide + 1;
@@ -134,15 +123,6 @@ const LessonScreen = () => {
             />
           )}
         </Card>
-
-        <form onSubmit={handleQuestion} className="relative">
-          <Input
-            value={question}
-            onChange={(e) => setQuestion(e.target.value)}
-            placeholder="Ask a question..."
-            className="bg-white/10 backdrop-blur-sm"
-          />
-        </form>
       </div>
     </div>
   );
