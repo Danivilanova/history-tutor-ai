@@ -1,4 +1,3 @@
-
 import { FC } from 'react';
 
 interface SlideContentProps {
@@ -18,8 +17,8 @@ const SlideContent: FC<SlideContentProps> = ({ text, image }) => {
           />
         </div>
       )}
-      <div className="text-center animate-fade-in">
-        <p className="text-lg sm:text-xl">{text}</p>
+      <div className={`text-center ${text ? 'animate-fade-in' : ''}`}>
+        <p className="text-lg sm:text-xl min-h-[3rem]">{text}</p>
       </div>
     </div>
   );

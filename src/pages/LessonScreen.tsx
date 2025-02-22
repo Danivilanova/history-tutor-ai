@@ -1,4 +1,3 @@
-
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useQuery } from '@tanstack/react-query';
@@ -101,9 +100,6 @@ const LessonScreen = () => {
             <Button 
               onClick={() => {
                 startConversation();
-                if (sections?.lessonId) {
-                  startQuiz(sections.lessonId);
-                }
               }}
               size="lg"
               className="animate-pulse"

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { TutorAgent } from '@/types/lesson';
 import { useConversationHandler } from './useConversationHandler';
@@ -10,7 +9,7 @@ interface CurrentSlide {
 }
 
 export function useLesson(selectedAgent: TutorAgent, sections?: any[]) {
-  const [currentSlide, setCurrentSlide] = useState<CurrentSlide | null>(null);
+  const [currentSlide, setCurrentSlide] = useState<CurrentSlide>({ text: '', imageUrl: '' });
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [volume, setVolume] = useState(0.5);
@@ -35,10 +34,16 @@ export function useLesson(selectedAgent: TutorAgent, sections?: any[]) {
   const { startConversation } = useConversationHandler(
     selectedAgent,
     sections,
-    () => setIsConversationStarted(true),
+    () => {
+      setIsConversationStarted(true);
+      // Reset to empty slide when conversation starts
+      setCurrentSlide({ text: '', imageUrl: '' });
+    },
     (speaking) => setIsSpeaking(speaking),
     volume,
-    (text, imageUrl) => setCurrentSlide({ text, imageUrl })
+    (text, imageUrl) => {
+      setCurrentSlide({ text, imageUrl });
+    }
   );
 
   const handleVolumeChange = (newVolume: number) => {
