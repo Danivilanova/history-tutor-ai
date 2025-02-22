@@ -8,20 +8,20 @@ interface SlideContentProps {
 
 const SlideContent: FC<SlideContentProps> = ({ text, image }) => {
   return (
-    <>
-      <div className="w-full text-center animate-fade-in">
-        <p className="text-xl mt-4">{text}</p>
+    <div className="w-full flex flex-col gap-6">
+      <div className="text-center animate-fade-in">
+        <p className="text-lg sm:text-xl">{text}</p>
       </div>
       {image && (
-        <div className="w-full max-w-2xl h-64 rounded-lg overflow-hidden animate-fade-in mt-8">
+        <div className="w-full max-w-lg mx-auto rounded-lg overflow-hidden animate-fade-in">
           <img 
             src={image} 
             alt="Lesson illustration"
-            className="w-full h-full object-cover"
+            className="w-full h-48 sm:h-64 object-cover"
           />
         </div>
       )}
-    </>
+    </div>
   );
 };
 
