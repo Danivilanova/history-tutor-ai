@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Card } from "@/components/ui/card";
@@ -76,6 +77,8 @@ const LessonScreen = () => {
   const selectedAgent = TUTOR_AGENTS[tutorPersonality];
   
   const conversation = useConversation({
+    apiKey: process.env.ELEVEN_LABS_API_KEY,
+    agentId: selectedAgent.id,
     overrides: {
       agent: {
         prompt: {
