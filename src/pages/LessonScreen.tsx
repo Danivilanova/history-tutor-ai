@@ -99,6 +99,7 @@ const LessonScreen = () => {
   const [volume, setVolume] = useState(0.5);
   const [feedback, setFeedback] = useState('');
   const [isComplete, setIsComplete] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
 
   const tutorPersonality = (location.state?.personality || 'friendly') as keyof typeof TUTOR_AGENTS;
   const selectedAgent = TUTOR_AGENTS[tutorPersonality];
@@ -109,7 +110,9 @@ const LessonScreen = () => {
     },
     onDisconnect: () => {
       console.log("Disconnected from ElevenLabs, was speaking:", isSpeaking);
-      setIsSpeaking(false);
+      if (hasStarted) {
+        setIsSpeaking(false);
+      }
     },
     onMessage: (message) => {
       console.log("Message from AI:", message);
@@ -121,6 +124,11 @@ const LessonScreen = () => {
   });
 
   const startConversation = async () => {
+    if (hasStarted) {
+      console.log('Conversation already started, skipping...');
+      return;
+    }
+
     console.log('Starting conversation...');
     try {
       const hasPermission = await requestMicrophonePermission()
@@ -149,6 +157,7 @@ const LessonScreen = () => {
       });
 
       console.log('Started conversation:', conversationId, 'with agent:', selectedAgent.id);
+      setHasStarted(true);
       setIsSpeaking(true);
       conversation.setVolume({ volume });
       console.log('Set initial volume to:', volume);
@@ -159,11 +168,17 @@ const LessonScreen = () => {
   };
 
   const endConversation = async () => {
+    if (!hasStarted) {
+      console.log('No conversation to end, skipping...');
+      return;
+    }
+
     console.log('Ending conversation...');
     try {
       if (conversation) {
         await conversation.endSession();
         console.log('Successfully ended conversation');
+        setHasStarted(false);
         setIsSpeaking(false);
       }
     } catch (error) {
@@ -172,19 +187,26 @@ const LessonScreen = () => {
   };
 
   useEffect(() => {
-    console.log('Initial mount effect running, isMuted:', isMuted);
-    if (!isMuted) {
-      startConversation();
-    }
+    let mounted = true;
+
+    const init = async () => {
+      console.log('Initial mount effect running, isMuted:', isMuted);
+      if (!isMuted && mounted) {
+        await startConversation();
+      }
+    };
+
+    init();
 
     return () => {
+      mounted = false;
       console.log('Component unmounting, cleaning up conversation');
       endConversation();
     };
   }, []);
 
   useEffect(() => {
-    if (conversation) {
+    if (conversation && hasStarted) {
       console.log('Setting volume to:', volume);
       conversation.setVolume({ volume });
     }
