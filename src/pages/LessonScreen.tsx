@@ -102,10 +102,10 @@ const LessonScreen = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5">
-      <div className="max-w-4xl mx-auto relative min-h-screen p-4 flex flex-col">
-        <div className="py-4 animate-fade-in">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex-1">
+      <div className="max-w-4xl mx-auto relative min-h-screen p-2 sm:p-4 flex flex-col">
+        <div className="py-2 sm:py-4 animate-fade-in">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4 sm:mb-6">
+            <div className="flex-1 w-full">
               <LessonHeader 
                 title={SAMPLE_LESSON.title}
                 isMuted={isMuted}
@@ -114,7 +114,7 @@ const LessonScreen = () => {
                 onVolumeChange={handleVolumeChange}
               />
             </div>
-            <div className="ml-4">
+            <div className="ml-0 sm:ml-4 self-end sm:self-auto">
               <ProgressIndicator 
                 current={currentProgress} 
                 total={totalSteps}
@@ -122,7 +122,7 @@ const LessonScreen = () => {
             </div>
           </div>
 
-          <div className="relative h-2 bg-muted rounded-full mb-8 overflow-hidden">
+          <div className="relative h-2 bg-muted rounded-full mb-4 sm:mb-8 overflow-hidden">
             <div 
               className="absolute left-0 top-0 h-full bg-primary transition-all duration-300 rounded-full"
               style={{ 
@@ -139,7 +139,7 @@ const LessonScreen = () => {
             <SpeakingIndicator isActive={isSpeaking} />
           </div>
           
-          <div className="flex-1 flex items-center justify-center p-8">
+          <div className="flex-1 flex items-center justify-center p-4 sm:p-8">
             {!isQuizMode ? (
               <SlideContent 
                 text={SAMPLE_LESSON.slides[currentSlide].text}
