@@ -18,9 +18,15 @@ export function useLesson(selectedAgent: TutorAgent, sections?: any[]) {
   const [isConversationStarted, setIsConversationStarted] = useState(false);
   const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
 
+  console.log('useLesson - Initializing with agent:', {
+    name: selectedAgent.name,
+    id: selectedAgent.id,
+    sectionsCount: sections?.length
+  });
+
   const conversation = useConversation({
     onConnect: () => {
-      console.log("Connected to ElevenLabs");
+      console.log("Connected to ElevenLabs with agent:", selectedAgent.name);
     },
     onDisconnect: () => {
       console.log("Disconnected from ElevenLabs");
@@ -37,20 +43,25 @@ export function useLesson(selectedAgent: TutorAgent, sections?: any[]) {
 
   const startConversation = async () => {
     try {
+      console.log('Starting conversation with agent:', {
+        name: selectedAgent.name,
+        id: selectedAgent.id
+      });
+
       const hasPermission = await requestMicrophonePermission()
       if (!hasPermission) {
+        console.error('Microphone permission denied');
         toast.error("Microphone permission is required for voice interaction");
         return;
       }
 
       const signedUrl = await getSignedUrl(selectedAgent.id);
+      console.log('Got signed URL for voice ID:', selectedAgent.id);
 
-      // Create a lesson content string using only the main content
       const lessonContent = sections?.map(section => {
         return `${section.title}:\n${section.content}`;
       }).join('\n\n');
 
-      // Enhance the agent's prompt with lesson content and name
       const enhancedPrompt = `
 ${selectedAgent.prompt}
 
@@ -60,6 +71,8 @@ ${lessonContent}
 
 Remember to teach this content in my assigned style while maintaining accuracy. Break down complex concepts and encourage questions. Always refer to myself as ${selectedAgent.name} when introducing myself or when it feels natural in conversation.
 `;
+
+      console.log('Starting ElevenLabs session with prompt length:', enhancedPrompt.length);
 
       const conversationId = await conversation.startSession({
         signedUrl,
@@ -72,6 +85,8 @@ Remember to teach this content in my assigned style while maintaining accuracy. 
           }
         }
       });
+
+      console.log('Conversation started with ID:', conversationId);
 
       setIsConversationStarted(true);
       setIsSpeaking(true);
@@ -132,7 +147,6 @@ Remember to teach this content in my assigned style while maintaining accuracy. 
 
   return {
     currentSlide,
-    setCurrentSlide,
     isSpeaking,
     isQuizMode,
     currentQuiz,

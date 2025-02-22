@@ -18,22 +18,43 @@ const LessonScreen = () => {
   const selectedAgent = TUTOR_AGENTS[tutorPersonality];
   const lessonTitle = searchParams.get('title') || "The Fall of Rome";
 
+  console.log('LessonScreen - URL Parameters:', {
+    tutorPersonality,
+    lessonTitle,
+    searchParams: Object.fromEntries(searchParams.entries())
+  });
+  
+  console.log('LessonScreen - Selected Agent:', {
+    name: selectedAgent.name,
+    id: selectedAgent.id,
+    personality: tutorPersonality
+  });
+
   const { data: sections, isLoading } = useQuery({
     queryKey: ['lessonSections', lessonTitle],
     queryFn: async () => {
+      console.log('Fetching lesson sections for:', lessonTitle);
+      
       const { data: lesson } = await supabase
         .from('lessons')
         .select('id')
         .eq('title', lessonTitle)
         .single();
 
-      if (!lesson) throw new Error('Lesson not found');
+      if (!lesson) {
+        console.error('Lesson not found:', lessonTitle);
+        throw new Error('Lesson not found');
+      }
+
+      console.log('Found lesson:', lesson);
 
       const { data } = await supabase
         .from('lesson_sections')
         .select('*, generated_content(*)')
         .eq('lesson_id', lesson.id)
         .order('order_index');
+
+      console.log('Retrieved sections:', data?.length);
 
       return {
         lessonId: lesson.id,
