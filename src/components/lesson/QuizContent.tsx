@@ -42,16 +42,27 @@ const QuizContent: FC<QuizContentProps> = ({
       <div className="text-center animate-fade-in">
         <h3 className="text-xl mb-6">{quiz[currentQuiz].question}</h3>
         <div className="flex gap-4 justify-center">
-          {quiz[currentQuiz].options.map((option, index) => (
-            <Button
-              key={index}
-              onClick={() => onAnswerSubmit(option)}
-              variant="outline"
-              className="min-w-[120px]"
-            >
-              {option}
-            </Button>
-          ))}
+          {quiz[currentQuiz].options.map((option, index) => {
+            const isSelectedOption = feedback && option === quiz[currentQuiz].correct;
+            const isIncorrectSelected = feedback && option !== quiz[currentQuiz].correct;
+            
+            return (
+              <Button
+                key={index}
+                onClick={() => onAnswerSubmit(option)}
+                variant={feedback ? "outline" : "outline"}
+                className={cn(
+                  "min-w-[120px] transition-colors",
+                  feedback && isSelectedOption && "border-green-600 bg-green-50 text-green-600 hover:bg-green-50",
+                  feedback && isIncorrectSelected && "border-red-600 bg-red-50 text-red-600 hover:bg-red-50"
+                )}
+              >
+                {option}
+                {feedback && isSelectedOption && <Check className="h-4 w-4 text-green-600 ml-2" />}
+                {feedback && isIncorrectSelected && <X className="h-4 w-4 text-red-600 ml-2" />}
+              </Button>
+            );
+          })}
         </div>
         {feedback && (
           <div className={cn(
