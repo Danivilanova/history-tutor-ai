@@ -74,7 +74,7 @@ async function requestMicrophonePermission() {
 async function getSignedUrl(agentId: string): Promise<string> {
   const { data, error } = await supabase.functions.invoke('get-signed-url', {
     method: 'GET',
-    queryParams: { agentId }
+    query: { agentId }
   });
   
   if (error) {
