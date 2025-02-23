@@ -7,11 +7,6 @@ export interface LessonSection {
   order_index: number;
 }
 
-export interface GeneratedContent {
-  generated_text: string;
-  generated_image_url: string;
-}
-
 export interface TutorAgent {
   voiceId: string;
   name: string;

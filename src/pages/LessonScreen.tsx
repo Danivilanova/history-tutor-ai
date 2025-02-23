@@ -12,7 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLesson } from '@/hooks/useLesson';
 import { TUTOR_AGENTS } from '@/constants/lesson';
 import { useState, useEffect } from 'react';
-import type { LessonSection, GeneratedContent } from '@/types/lesson';
+import type { LessonSection } from '@/types/lesson';
 
 const LessonScreen = () => {
   const [searchParams] = useSearchParams();
@@ -53,13 +53,13 @@ const LessonScreen = () => {
 
       const { data: sections } = await supabase
         .from('lesson_sections')
-        .select('*, generated_content(*)')
+        .select('*')
         .eq('lesson_id', lessonId)
         .order('order_index');
 
       return {
         lesson,
-        sections: sections as (LessonSection & { generated_content: GeneratedContent[] })[]
+        sections: sections as LessonSection[]
       };
     },
     enabled: !!lessonId
