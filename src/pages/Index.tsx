@@ -1,6 +1,5 @@
 
 import { useState } from 'react';
-import { toast } from 'sonner';
 import { Badge } from "@/components/ui/badge";
 import TutorPersonalitySection from '../components/TutorPersonalitySection';
 import LessonSection from '../components/LessonSection';
@@ -11,24 +10,16 @@ const Index = () => {
   const [isPlayingPreview, setIsPlayingPreview] = useState<string | null>(null);
   const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
 
-  const handleStartLesson = (title: string) => {
+  const handleStartLesson = (lessonId: string) => {
     if (!selectedPersonality) {
-      toast.error("Please select a tutor personality first");
       return;
     }
-    toast.success(`Starting lesson: ${title} with ${selectedPersonality} tutor`);
   };
 
   const handleGenerateLesson = (topic: string) => {
-    if (!topic.trim()) {
-      toast.error("Please enter a topic first");
+    if (!topic.trim() || !selectedPersonality) {
       return;
     }
-    if (!selectedPersonality) {
-      toast.error("Please select a tutor personality first");
-      return;
-    }
-    toast.success(`Generating lesson about: ${topic} with ${selectedPersonality} tutor`);
   };
 
   const handlePreviewVoice = async (personality: typeof tutorPersonalities[0]) => {
@@ -59,7 +50,6 @@ const Index = () => {
 
       audio.onerror = () => {
         console.error('Error playing audio:', audio.error);
-        toast.error('Failed to play voice preview');
         setIsPlayingPreview(null);
         setCurrentAudio(null);
       };
@@ -67,7 +57,6 @@ const Index = () => {
       await audio.play();
     } catch (error) {
       console.error('Error playing preview:', error);
-      toast.error('Failed to play voice preview');
       setIsPlayingPreview(null);
       setCurrentAudio(null);
     }

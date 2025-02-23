@@ -2,7 +2,6 @@
 import { Badge } from "@/components/ui/badge";
 import TutorPersonalityCard from './TutorPersonalityCard';
 import { tutorPersonalities } from '../constants/tutor';
-import { toast } from 'sonner';
 
 interface TutorPersonalitySectionProps {
   selectedPersonality: string | null;
@@ -35,10 +34,7 @@ const TutorPersonalitySection = ({
             color={personality.color}
             name={personality.name}
             isSelected={selectedPersonality === personality.id}
-            onSelect={() => {
-              onPersonalitySelect(personality.id);
-              toast.success(`Selected ${personality.title} tutor personality`);
-            }}
+            onSelect={() => onPersonalitySelect(personality.id)}
             onPreviewVoice={() => onPreviewVoice(personality)}
             isPlayingPreview={isPlayingPreview === personality.id}
           />

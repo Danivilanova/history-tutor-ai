@@ -36,6 +36,9 @@ const LessonSection = ({
   });
 
   const handleStartLesson = (lessonId: string) => {
+    if (!selectedPersonality) {
+      return;
+    }
     console.log('Starting lesson with:', { lessonId, personality: selectedPersonality });
     onStartLesson(lessonId);
     const searchParams = new URLSearchParams();
@@ -45,6 +48,9 @@ const LessonSection = ({
   };
 
   const handleGenerateCustomLesson = (topic: string) => {
+    if (!topic.trim() || !selectedPersonality) {
+      return;
+    }
     console.log('Generating custom lesson with:', { topic, personality: selectedPersonality });
     onGenerateLesson(topic);
     const searchParams = new URLSearchParams();
