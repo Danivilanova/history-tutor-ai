@@ -24,19 +24,3 @@ export interface TutorAgents {
   strict: TutorAgent;
   friendly: TutorAgent;
 }
-
-export type QuestionDifficulty = 'easy' | 'medium' | 'hard';
-
-export interface QuizQuestion {
-  id: string;
-  lesson_id: string;
-  question: string;
-  options: string[];
-  correct_answer: string;
-  difficulty: QuestionDifficulty;
-  order_index: number;
-}
-
-export interface QuizData {
-  quiz: QuizQuestion[];
-}

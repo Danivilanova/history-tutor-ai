@@ -1,3 +1,4 @@
+
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useQuery } from '@tanstack/react-query';
@@ -5,7 +6,6 @@ import { useSearchParams } from 'react-router-dom';
 import SpeakingIndicator from '@/components/SpeakingIndicator';
 import LessonHeader from '@/components/lesson/LessonHeader';
 import SlideContent from '@/components/lesson/SlideContent';
-import QuizContent from '@/components/lesson/QuizContent';
 import { supabase } from "@/integrations/supabase/client";
 import { useLesson } from '@/hooks/useLesson';
 import { TUTOR_AGENTS } from '@/constants/lesson';
@@ -46,24 +46,12 @@ const LessonScreen = () => {
   const {
     currentSlide,
     isSpeaking,
-    isQuizMode,
-    currentQuiz,
     isMuted,
     volume,
-    feedback,
-    isComplete,
     isConversationStarted,
-    quizQuestions,
     startConversation,
     handleVolumeChange,
-    startQuiz,
-    handleQuizAnswer,
   } = useLesson(selectedAgent, sections?.sections);
-
-  const currentProgress = isQuizMode
-    ? (sections?.sections?.length || 0) + (currentQuiz || 0)
-    : 1;
-  const totalSteps = (sections?.sections?.length || 0) + (quizQuestions?.length || 0);
 
   if (isLoading) {
     return (
@@ -84,15 +72,6 @@ const LessonScreen = () => {
             onMuteToggle={() => handleVolumeChange(isMuted ? 0.5 : 0)}
             onVolumeChange={handleVolumeChange}
           />
-
-          <div className="relative h-2 bg-muted rounded-full mb-4 overflow-hidden">
-            <div
-              className="absolute left-0 top-0 h-full bg-primary transition-all duration-300 rounded-full"
-              style={{
-                width: `${(currentProgress / totalSteps) * 100}%`,
-              }}
-            />
-          </div>
         </div>
 
         {!isConversationStarted ? (
@@ -116,18 +95,10 @@ const LessonScreen = () => {
             </div>
 
             <div className="flex-1 flex items-center justify-center p-4">
-              {!isQuizMode && currentSlide ? (
+              {currentSlide && (
                 <SlideContent
                   text={currentSlide.text}
                   image={currentSlide.imageUrl}
-                />
-              ) : (
-                <QuizContent
-                  isComplete={isComplete}
-                  currentQuiz={currentQuiz}
-                  quiz={quizQuestions}
-                  feedback={feedback}
-                  onAnswerSubmit={handleQuizAnswer}
                 />
               )}
             </div>

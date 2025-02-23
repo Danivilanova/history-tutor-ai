@@ -1,7 +1,7 @@
+
 import { useState } from 'react';
 import { TutorAgent } from '@/types/lesson';
 import { useConversationHandler } from './useConversationHandler';
-import { useQuizHandler } from './useQuizHandler';
 
 interface CurrentSlide {
   text: string;
@@ -17,26 +17,14 @@ export function useLesson(selectedAgent: TutorAgent, sections?: any[]) {
 
   console.log('useLesson - Initializing with agent:', {
     name: selectedAgent.name,
-    id: selectedAgent.id,
     sectionsCount: sections?.length
   });
-
-  const {
-    isQuizMode,
-    currentQuiz,
-    feedback,
-    isComplete,
-    quizQuestions,
-    startQuiz,
-    handleQuizAnswer
-  } = useQuizHandler();
 
   const { startConversation } = useConversationHandler(
     selectedAgent,
     sections,
     () => {
       setIsConversationStarted(true);
-      // Reset to empty slide when conversation starts
       setCurrentSlide({ text: '', imageUrl: '' });
     },
     (speaking) => setIsSpeaking(speaking),
@@ -58,17 +46,10 @@ export function useLesson(selectedAgent: TutorAgent, sections?: any[]) {
   return {
     currentSlide,
     isSpeaking,
-    isQuizMode,
-    currentQuiz,
     isMuted,
     volume,
-    feedback,
-    isComplete,
     isConversationStarted,
-    quizQuestions,
     startConversation,
     handleVolumeChange,
-    startQuiz,
-    handleQuizAnswer,
   };
 }

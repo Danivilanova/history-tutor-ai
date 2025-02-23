@@ -106,47 +106,6 @@ export type Database = {
         }
         Relationships: []
       }
-      quiz_questions: {
-        Row: {
-          correct_answer: string
-          created_at: string | null
-          difficulty: Database["public"]["Enums"]["question_difficulty"]
-          id: string
-          lesson_id: string | null
-          options: Json
-          order_index: number
-          question: string
-        }
-        Insert: {
-          correct_answer: string
-          created_at?: string | null
-          difficulty?: Database["public"]["Enums"]["question_difficulty"]
-          id?: string
-          lesson_id?: string | null
-          options: Json
-          order_index: number
-          question: string
-        }
-        Update: {
-          correct_answer?: string
-          created_at?: string | null
-          difficulty?: Database["public"]["Enums"]["question_difficulty"]
-          id?: string
-          lesson_id?: string | null
-          options?: Json
-          order_index?: number
-          question?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "quiz_questions_lesson_id_fkey"
-            columns: ["lesson_id"]
-            isOneToOne: false
-            referencedRelation: "lessons"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
     }
     Views: {
       [_ in never]: never
@@ -156,7 +115,6 @@ export type Database = {
     }
     Enums: {
       lesson_section_type: "intro" | "point" | "conclusion"
-      question_difficulty: "easy" | "medium" | "hard"
     }
     CompositeTypes: {
       [_ in never]: never
