@@ -68,12 +68,10 @@ const LessonScreen = () => {
   const {
     currentSlide,
     isSpeaking,
-    isMuted,
-    volume,
     isConversationStarted,
     isLessonComplete,
     startConversation,
-    handleVolumeChange,
+    endLesson,
   } = useLesson(selectedAgent, lessonData?.sections);
 
   if (isLoading) {
@@ -99,10 +97,7 @@ const LessonScreen = () => {
         <div className="py-2 animate-fade-in">
           <LessonHeader
             title={lessonData?.lesson.title || "Loading..."}
-            isMuted={isMuted}
-            volume={volume}
-            onMuteToggle={() => handleVolumeChange(isMuted ? 0.5 : 0)}
-            onVolumeChange={handleVolumeChange}
+            onFinishLesson={endLesson}
           />
         </div>
 

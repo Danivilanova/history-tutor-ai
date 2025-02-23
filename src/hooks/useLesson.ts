@@ -11,8 +11,6 @@ interface CurrentSlide {
 export function useLesson(selectedAgent: TutorAgent, sections?: any[]) {
   const [currentSlide, setCurrentSlide] = useState<CurrentSlide>({ text: '', imageUrl: '' });
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
-  const [volume, setVolume] = useState(0.5);
   const [isConversationStarted, setIsConversationStarted] = useState(false);
   const [isLessonComplete, setIsLessonComplete] = useState(false);
 
@@ -21,7 +19,7 @@ export function useLesson(selectedAgent: TutorAgent, sections?: any[]) {
     sectionsCount: sections?.length
   });
 
-  const { startConversation } = useConversationHandler(
+  const { startConversation, conversation } = useConversationHandler(
     selectedAgent,
     sections,
     () => {
@@ -29,30 +27,26 @@ export function useLesson(selectedAgent: TutorAgent, sections?: any[]) {
       setCurrentSlide({ text: '', imageUrl: '' });
     },
     (speaking) => setIsSpeaking(speaking),
-    volume,
+    0.5,
     (text, imageUrl) => {
       setCurrentSlide({ text, imageUrl });
     },
     () => setIsLessonComplete(true)
   );
 
-  const handleVolumeChange = (newVolume: number) => {
-    setVolume(newVolume);
-    if (newVolume === 0) {
-      setIsMuted(true);
-    } else if (isMuted) {
-      setIsMuted(false);
+  const endLesson = async () => {
+    if (conversation) {
+      setIsLessonComplete(true);
+      await conversation.endSession();
     }
   };
 
   return {
     currentSlide,
     isSpeaking,
-    isMuted,
-    volume,
     isConversationStarted,
     isLessonComplete,
     startConversation,
-    handleVolumeChange,
+    endLesson,
   };
 }
