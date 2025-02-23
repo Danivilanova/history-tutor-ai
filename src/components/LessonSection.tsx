@@ -7,6 +7,7 @@ import { ArrowRight } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from 'react-router-dom';
 import { LessonSection as LessonSectionType } from '@/types/lesson';
+import { toast } from "sonner";
 
 interface LessonSectionProps {
   selectedPersonality: string | null;
@@ -55,7 +56,17 @@ const LessonSection = ({
     }
     
     try {
-      // First create the lesson
+      // Generate sections first
+      const loadingToast = toast.loading("Generating your custom lesson...");
+      
+      const { data: sectionsData, error: sectionsError } = await supabase.functions
+        .invoke('generate-lesson-sections', {
+          body: { topic }
+        });
+
+      if (sectionsError) throw sectionsError;
+      
+      // Create the lesson
       const { data: lesson, error: lessonError } = await supabase
         .from('lessons')
         .insert({
@@ -68,25 +79,20 @@ const LessonSection = ({
 
       if (lessonError) throw lessonError;
 
-      // Then create the sections with proper typing
-      const sections: Omit<LessonSectionType, 'id'>[] = [
-        { title: 'Introduction', section_type: 'intro' as const, order_index: 0, content: '' },
-        { title: 'Key Point 1', section_type: 'point' as const, order_index: 1, content: '' },
-        { title: 'Key Point 2', section_type: 'point' as const, order_index: 2, content: '' },
-        { title: 'Key Point 3', section_type: 'point' as const, order_index: 3, content: '' },
-        { title: 'Conclusion', section_type: 'conclusion' as const, order_index: 4, content: '' }
-      ];
-
-      const { error: sectionsError } = await supabase
+      // Create the sections
+      const { error: insertSectionsError } = await supabase
         .from('lesson_sections')
         .insert(
-          sections.map(section => ({
+          sectionsData.sections.map((section: any) => ({
             ...section,
             lesson_id: lesson.id
           }))
         );
 
-      if (sectionsError) throw sectionsError;
+      if (insertSectionsError) throw insertSectionsError;
+
+      toast.dismiss(loadingToast);
+      toast.success("Lesson created successfully!");
 
       // Navigate to the lesson page
       const searchParams = new URLSearchParams();
@@ -95,7 +101,7 @@ const LessonSection = ({
       navigate(`/lesson?${searchParams.toString()}`);
     } catch (error) {
       console.error('Error generating lesson:', error);
-      // Here you might want to show a toast notification to the user
+      toast.error("Failed to generate lesson. Please try again.");
     }
   };
 
