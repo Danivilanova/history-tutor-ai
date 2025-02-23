@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ArrowRight } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from 'react-router-dom';
+import { LessonSection as LessonSectionType } from '@/types/lesson';
 
 interface LessonSectionProps {
   selectedPersonality: string | null;
@@ -67,13 +68,13 @@ const LessonSection = ({
 
       if (lessonError) throw lessonError;
 
-      // Then create the sections
-      const sections = [
-        { title: 'Introduction', section_type: 'intro', order_index: 0 },
-        { title: 'Key Point 1', section_type: 'point', order_index: 1 },
-        { title: 'Key Point 2', section_type: 'point', order_index: 2 },
-        { title: 'Key Point 3', section_type: 'point', order_index: 3 },
-        { title: 'Conclusion', section_type: 'conclusion', order_index: 4 }
+      // Then create the sections with proper typing
+      const sections: Omit<LessonSectionType, 'id'>[] = [
+        { title: 'Introduction', section_type: 'intro' as const, order_index: 0, content: '' },
+        { title: 'Key Point 1', section_type: 'point' as const, order_index: 1, content: '' },
+        { title: 'Key Point 2', section_type: 'point' as const, order_index: 2, content: '' },
+        { title: 'Key Point 3', section_type: 'point' as const, order_index: 3, content: '' },
+        { title: 'Conclusion', section_type: 'conclusion' as const, order_index: 4, content: '' }
       ];
 
       const { error: sectionsError } = await supabase
@@ -81,8 +82,7 @@ const LessonSection = ({
         .insert(
           sections.map(section => ({
             ...section,
-            lesson_id: lesson.id,
-            content: '' // This will be filled by the AI during the lesson
+            lesson_id: lesson.id
           }))
         );
 
