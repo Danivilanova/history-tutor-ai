@@ -65,7 +65,7 @@ Renaissance art, starting around 1300 AD in Florence and lasting to 1600 AD, tra
 
 Create a lesson following this exact format with clear XML tags for all elements. Include specific details, dates, and examples like in this model.`;
 
-  const response = await fetch('https://queue.fal.run/fal-ai/any-llm', {
+  const response = await fetch('https://fal.run/fal-ai/any-llm', {
     method: 'POST',
     headers: {
       'Authorization': `Key ${FAL_KEY}`,
@@ -79,14 +79,16 @@ Create a lesson following this exact format with clear XML tags for all elements
   }
 
   const data = await response.json();
-  const content = data.response;
-
+  
   // Log the raw response for debugging
-  console.log('Raw AI response:', content);
+  console.log('Raw AI response:', data);
 
-  if (!content) {
-    throw new Error('Empty response from AI service');
+  if (!data.output || data.error) {
+    console.error('AI service error:', data.error);
+    throw new Error(data.error || 'Empty response from AI service');
   }
+
+  const content = data.output;
 
   // Extract lesson metadata
   const lessonMatch = content.match(/<lesson>(.*?)<\/lesson>/s);
