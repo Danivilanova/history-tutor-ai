@@ -1,3 +1,4 @@
+
 import { FC } from 'react';
 
 interface SlideContentProps {
@@ -13,7 +14,7 @@ const SlideContent: FC<SlideContentProps> = ({ text, image }) => {
           <img 
             src={image} 
             alt="Lesson illustration"
-            className="w-full h-48 sm:h-64 object-cover"
+            className="w-full h-auto object-contain" // Changed from h-48/h-64 and object-cover to h-auto and object-contain
           />
         </div>
       )}
