@@ -61,41 +61,19 @@ const LessonSection = ({
       setIsGenerating(true);
       const loadingToast = toast.loading("Generating your custom lesson...");
       
-      const { data: lessonData, error: sectionsError } = await supabase.functions
+      const { data, error } = await supabase.functions
         .invoke('generate-lesson-sections', {
           body: { topic }
         });
 
-      if (sectionsError) throw sectionsError;
-      
-      const { data: lesson, error: lessonError } = await supabase
-        .from('lessons')
-        .insert({
-          title: lessonData.title,
-          difficulty: lessonData.difficulty,
-          is_featured: false
-        })
-        .select()
-        .single();
-
-      if (lessonError) throw lessonError;
-
-      const { error: insertSectionsError } = await supabase
-        .from('lesson_sections')
-        .insert(
-          lessonData.sections.map((section: any) => ({
-            ...section,
-            lesson_id: lesson.id
-          }))
-        );
-
-      if (insertSectionsError) throw insertSectionsError;
+      if (error) throw error;
+      if (!data?.id) throw new Error('Failed to generate lesson');
 
       toast.dismiss(loadingToast);
       toast.success("Lesson created successfully!");
 
       const searchParams = new URLSearchParams();
-      searchParams.set('id', lesson.id);
+      searchParams.set('id', data.id);
       searchParams.set('personality', selectedPersonality);
       navigate(`/lesson?${searchParams.toString()}`);
     } catch (error) {

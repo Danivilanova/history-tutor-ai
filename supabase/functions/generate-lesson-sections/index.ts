@@ -1,7 +1,12 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 
 const FAL_KEY = Deno.env.get('FAL_KEY');
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -80,7 +85,6 @@ Create a lesson following this exact format with clear XML tags for all elements
 
   const data = await response.json();
   
-  // Log the raw response for debugging
   console.log('Raw AI response:', data);
 
   if (!data.output || data.error) {
@@ -163,9 +167,6 @@ Create a lesson following this exact format with clear XML tags for all elements
     throw new Error('Failed to generate complete lesson content');
   }
 
-  // Log successful generation
-  console.log('Successfully generated lesson:', { title, difficulty, sectionCount: sections.length });
-
   return {
     title,
     difficulty: difficulty === 'Beginner' || difficulty === 'Advanced' ? difficulty : 'Intermediate',
@@ -186,10 +187,43 @@ serve(async (req) => {
     }
 
     console.log('Generating lesson for topic:', topic);
-    const lesson = await generateLessonContent(topic);
+    const lessonContent = await generateLessonContent(topic);
     
+    // Create the lesson
+    const { data: lesson, error: lessonError } = await supabase
+      .from('lessons')
+      .insert({
+        title: lessonContent.title,
+        difficulty: lessonContent.difficulty,
+        is_featured: false
+      })
+      .select()
+      .single();
+
+    if (lessonError) {
+      throw new Error(`Failed to create lesson: ${lessonError.message}`);
+    }
+
+    // Create the sections
+    const { error: sectionsError } = await supabase
+      .from('lesson_sections')
+      .insert(
+        lessonContent.sections.map(section => ({
+          ...section,
+          lesson_id: lesson.id
+        }))
+      );
+
+    if (sectionsError) {
+      throw new Error(`Failed to create lesson sections: ${sectionsError.message}`);
+    }
+
     return new Response(
-      JSON.stringify(lesson),
+      JSON.stringify({ 
+        id: lesson.id,
+        title: lesson.title,
+        difficulty: lesson.difficulty
+      }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
