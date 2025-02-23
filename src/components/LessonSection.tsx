@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from 'react-router-dom';
 import { LessonSection as LessonSectionType } from '@/types/lesson';
 import { toast } from "sonner";
+import { useState } from 'react';
 
 interface LessonSectionProps {
   selectedPersonality: string | null;
@@ -21,6 +22,7 @@ const LessonSection = ({
   onStartLesson
 }: LessonSectionProps) => {
   const navigate = useNavigate();
+  const [isGenerating, setIsGenerating] = useState(false);
   
   console.log('LessonSection - Selected Personality:', selectedPersonality);
   
@@ -56,7 +58,7 @@ const LessonSection = ({
     }
     
     try {
-      // Generate sections first
+      setIsGenerating(true);
       const loadingToast = toast.loading("Generating your custom lesson...");
       
       const { data: sectionsData, error: sectionsError } = await supabase.functions
@@ -66,7 +68,6 @@ const LessonSection = ({
 
       if (sectionsError) throw sectionsError;
       
-      // Create the lesson
       const { data: lesson, error: lessonError } = await supabase
         .from('lessons')
         .insert({
@@ -79,7 +80,6 @@ const LessonSection = ({
 
       if (lessonError) throw lessonError;
 
-      // Create the sections
       const { error: insertSectionsError } = await supabase
         .from('lesson_sections')
         .insert(
@@ -94,7 +94,6 @@ const LessonSection = ({
       toast.dismiss(loadingToast);
       toast.success("Lesson created successfully!");
 
-      // Navigate to the lesson page
       const searchParams = new URLSearchParams();
       searchParams.set('id', lesson.id);
       searchParams.set('personality', selectedPersonality);
@@ -102,6 +101,8 @@ const LessonSection = ({
     } catch (error) {
       console.error('Error generating lesson:', error);
       toast.error("Failed to generate lesson. Please try again.");
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -123,7 +124,10 @@ const LessonSection = ({
           </Badge>
           <h2 className="text-xl sm:text-2xl font-semibold">Choose Your Learning Path</h2>
         </div>
-        <DynamicInput onGenerate={handleGenerateCustomLesson} />
+        <DynamicInput 
+          onGenerate={handleGenerateCustomLesson} 
+          isGenerating={isGenerating}
+        />
       </div>
 
       <div>
