@@ -23,11 +23,12 @@ const LessonSection = ({
   console.log('LessonSection - Selected Personality:', selectedPersonality);
   
   const { data: lessons, isLoading } = useQuery({
-    queryKey: ['lessons'],
+    queryKey: ['featured-lessons'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('lessons')
         .select('*')
+        .eq('is_featured', true)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
@@ -47,16 +48,55 @@ const LessonSection = ({
     navigate(`/lesson?${searchParams.toString()}`);
   };
 
-  const handleGenerateCustomLesson = (topic: string) => {
+  const handleGenerateCustomLesson = async (topic: string) => {
     if (!topic.trim() || !selectedPersonality) {
       return;
     }
-    console.log('Generating custom lesson with:', { topic, personality: selectedPersonality });
-    onGenerateLesson(topic);
-    const searchParams = new URLSearchParams();
-    searchParams.set('title', topic);
-    searchParams.set('personality', selectedPersonality || 'friendly');
-    navigate(`/lesson?${searchParams.toString()}`);
+    
+    try {
+      // First create the lesson
+      const { data: lesson, error: lessonError } = await supabase
+        .from('lessons')
+        .insert({
+          title: topic,
+          difficulty: 'Intermediate',
+          is_featured: false
+        })
+        .select()
+        .single();
+
+      if (lessonError) throw lessonError;
+
+      // Then create the sections
+      const sections = [
+        { title: 'Introduction', section_type: 'intro', order_index: 0 },
+        { title: 'Key Point 1', section_type: 'point', order_index: 1 },
+        { title: 'Key Point 2', section_type: 'point', order_index: 2 },
+        { title: 'Key Point 3', section_type: 'point', order_index: 3 },
+        { title: 'Conclusion', section_type: 'conclusion', order_index: 4 }
+      ];
+
+      const { error: sectionsError } = await supabase
+        .from('lesson_sections')
+        .insert(
+          sections.map(section => ({
+            ...section,
+            lesson_id: lesson.id,
+            content: '' // This will be filled by the AI during the lesson
+          }))
+        );
+
+      if (sectionsError) throw sectionsError;
+
+      // Navigate to the lesson page
+      const searchParams = new URLSearchParams();
+      searchParams.set('id', lesson.id);
+      searchParams.set('personality', selectedPersonality);
+      navigate(`/lesson?${searchParams.toString()}`);
+    } catch (error) {
+      console.error('Error generating lesson:', error);
+      // Here you might want to show a toast notification to the user
+    }
   };
 
   return (
@@ -104,7 +144,7 @@ const LessonSection = ({
             ))
           ) : (
             <div className="col-span-full text-center text-muted-foreground">
-              No lessons available
+              No featured lessons available
             </div>
           )}
         </div>
