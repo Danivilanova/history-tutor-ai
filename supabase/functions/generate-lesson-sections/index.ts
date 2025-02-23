@@ -8,10 +8,28 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const generateSections = async (topic: string) => {
-  const prompt = `Create a structured lesson about "${topic}" with clearly tagged sections. Use <intro> for introduction, <section> for main points, and <conclusion> for the summary.
+interface GeneratedLesson {
+  title: string;
+  difficulty: string;
+  sections: {
+    title: string;
+    content: string;
+    section_type: 'intro' | 'point' | 'conclusion';
+    order_index: number;
+  }[];
+}
 
-Example format:
+const generateLessonContent = async (topic: string): Promise<GeneratedLesson> => {
+  const prompt = `Generate a complete lesson about "${topic}" with clear sections and metadata.
+The response should be structured as follows:
+1. First line: The lesson title (make it catchy and descriptive)
+2. Second line: The difficulty level (Beginner, Intermediate, or Advanced)
+3. Then the content sections with XML tags
+
+Example:
+The Renaissance: A Cultural Revolution in European Art (1300-1600)
+Intermediate
+
 <intro>
 Renaissance art emerged in Italy around 1300 AD, peaking from 1400 AD to 1600 AD, during a cultural rebirth after the Middle Ages. It began in Florence with patrons like the Medici family funding artists. This period saw a shift to realistic human forms and perspective, driven by masters like Leonardo da Vinci, born 1452 AD, Michelangelo, born 1475 AD, and Raphael, born 1483 AD. Over 10,000 artworks survive from this era across Italy, France, and beyond.
 </intro>
@@ -32,7 +50,7 @@ Renaissance art focused on humanism, depicting realistic humans and emotions, as
 Renaissance art, starting around 1300 AD in Florence and lasting to 1600 AD, transformed Europe with over 10,000 works, driven by the Medici and popes like Julius II, who died 1513 AD. Techniques like Brunelleschi's perspective from 1413 AD, da Vinci's chiaroscuro in "Mona Lisa" (1503–1506 AD), and oil paint from 1470 AD redefined realism. Masters like Michelangelo, with "David" (1501–1504 AD) and the Sistine Chapel (1508–1512 AD), and Raphael, with "School of Athens" (1509–1511 AD), blended humanism and religion, leaving a legacy in cities like Florence and Rome.
 </conclusion>
 
-Please create a lesson following this exact format, with clear tags and well-structured content for each section. Include specific details, dates, and examples like in this model.`;
+Please create a lesson following this exact format, with clear metadata and tagged sections. Include specific details, dates, and examples like in this model.`;
 
   const response = await fetch('https://queue.fal.run/fal-ai/any-llm', {
     method: 'POST',
@@ -50,13 +68,20 @@ Please create a lesson following this exact format, with clear tags and well-str
   const data = await response.json();
   const content = data.response;
 
-  // Initialize sections with empty content
+  // Split the content into lines
+  const lines = content.split('\n').filter(line => line.trim());
+  
+  // Extract title and difficulty from first two lines
+  const title = lines[0].trim();
+  const difficulty = lines[1].trim();
+
+  // Initialize sections
   const sections = [
-    { title: 'Introduction', section_type: 'intro', content: '', order_index: 0 },
-    { title: 'Key Point 1', section_type: 'point', content: '', order_index: 1 },
-    { title: 'Key Point 2', section_type: 'point', content: '', order_index: 2 },
-    { title: 'Key Point 3', section_type: 'point', content: '', order_index: 3 },
-    { title: 'Conclusion', section_type: 'conclusion', content: '', order_index: 4 }
+    { title: 'Introduction', content: '', section_type: 'intro' as const, order_index: 0 },
+    { title: 'Key Concepts and Techniques', content: '', section_type: 'point' as const, order_index: 1 },
+    { title: 'Major Developments', content: '', section_type: 'point' as const, order_index: 2 },
+    { title: 'Impact and Significance', content: '', section_type: 'point' as const, order_index: 3 },
+    { title: 'Summary and Legacy', content: '', section_type: 'conclusion' as const, order_index: 4 }
   ];
 
   // Extract content using regex with tags
@@ -70,7 +95,7 @@ Please create a lesson following this exact format, with clear tags and well-str
 
   if (sectionMatches) {
     sectionMatches.forEach((match: string, index: number) => {
-      if (index < 3) { // We only want 3 key points
+      if (index < 3) {
         const content = match.replace(/<\/?section>/g, '').trim();
         sections[index + 1].content = content;
       }
@@ -81,14 +106,22 @@ Please create a lesson following this exact format, with clear tags and well-str
     sections[4].content = conclusionMatch[1].trim();
   }
 
-  // Validate that all sections have content
+  // Validate content
   const emptySections = sections.filter(s => !s.content);
   if (emptySections.length > 0) {
     console.error('Some sections are empty:', emptySections);
     throw new Error('Failed to generate complete lesson content');
   }
 
-  return sections;
+  if (!title || !difficulty) {
+    throw new Error('Failed to generate lesson metadata');
+  }
+
+  return {
+    title,
+    difficulty: difficulty === 'Beginner' || difficulty === 'Advanced' ? difficulty : 'Intermediate',
+    sections
+  };
 };
 
 serve(async (req) => {
@@ -103,16 +136,16 @@ serve(async (req) => {
       throw new Error('Topic is required');
     }
 
-    const sections = await generateSections(topic);
+    const lesson = await generateLessonContent(topic);
     
     return new Response(
-      JSON.stringify({ sections }),
+      JSON.stringify(lesson),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );
   } catch (error) {
-    console.error('Error generating sections:', error);
+    console.error('Error generating lesson:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 

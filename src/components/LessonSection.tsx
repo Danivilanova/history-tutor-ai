@@ -61,7 +61,7 @@ const LessonSection = ({
       setIsGenerating(true);
       const loadingToast = toast.loading("Generating your custom lesson...");
       
-      const { data: sectionsData, error: sectionsError } = await supabase.functions
+      const { data: lessonData, error: sectionsError } = await supabase.functions
         .invoke('generate-lesson-sections', {
           body: { topic }
         });
@@ -71,8 +71,8 @@ const LessonSection = ({
       const { data: lesson, error: lessonError } = await supabase
         .from('lessons')
         .insert({
-          title: topic,
-          difficulty: 'Intermediate',
+          title: lessonData.title,
+          difficulty: lessonData.difficulty,
           is_featured: false
         })
         .select()
@@ -83,7 +83,7 @@ const LessonSection = ({
       const { error: insertSectionsError } = await supabase
         .from('lesson_sections')
         .insert(
-          sectionsData.sections.map((section: any) => ({
+          lessonData.sections.map((section: any) => ({
             ...section,
             lesson_id: lesson.id
           }))
