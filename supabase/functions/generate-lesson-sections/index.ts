@@ -9,12 +9,30 @@ const corsHeaders = {
 };
 
 const generateSections = async (topic: string) => {
-  const prompt = `Create a structured lesson about "${topic}" with the following parts:
-  1. An introduction that hooks the reader and provides context
-  2. Three key points that build understanding progressively
-  3. A conclusion that summarizes the main takeaways
-  
-  Format each section distinctly but concisely.`;
+  const prompt = `Create a structured lesson about "${topic}" with clearly tagged sections. Use <intro> for introduction, <section> for main points, and <conclusion> for the summary.
+
+Example format:
+<intro>
+The solar system is a fascinating cosmic neighborhood that has captivated humans for millennia. From the ancient astronomers to modern space exploration, our understanding has evolved dramatically.
+</intro>
+
+<section>
+The Sun, our central star, provides energy and gravity that holds the system together. This massive ball of hydrogen and helium drives the processes that make life possible on Earth.
+</section>
+
+<section>
+The inner planets - Mercury, Venus, Earth, and Mars - are rocky worlds, each with unique characteristics but sharing a common origin in the solar nebula.
+</section>
+
+<section>
+The outer planets, known as gas giants, demonstrate the diversity of planetary formation. These massive worlds, from Jupiter to Neptune, tell us about the early solar system's evolution.
+</section>
+
+<conclusion>
+Understanding our solar system helps us appreciate Earth's special place in space and guides our exploration of other star systems.
+</conclusion>
+
+Please create a lesson following this exact format, with clear tags and well-structured content for each section.`;
 
   const response = await fetch('https://queue.fal.run/fal-ai/any-llm', {
     method: 'POST',
@@ -32,7 +50,7 @@ const generateSections = async (topic: string) => {
   const data = await response.json();
   const content = data.response;
 
-  // Split the content into sections using pattern matching
+  // Initialize sections with empty content
   const sections = [
     { title: 'Introduction', section_type: 'intro', content: '', order_index: 0 },
     { title: 'Key Point 1', section_type: 'point', content: '', order_index: 1 },
@@ -41,23 +59,34 @@ const generateSections = async (topic: string) => {
     { title: 'Conclusion', section_type: 'conclusion', content: '', order_index: 4 }
   ];
 
-  // Extract sections from the AI response
-  const parts = content.split(/\n\n|\r\n\r\n/);
-  parts.forEach((part: string) => {
-    if (part.toLowerCase().includes('introduction')) {
-      sections[0].content = part;
-    } else if (part.toLowerCase().includes('conclusion')) {
-      sections[4].content = part;
-    } else if (part.match(/point|key/i)) {
-      // Find first empty point section
-      const emptyPointIndex = sections.findIndex(s => 
-        s.section_type === 'point' && !s.content
-      );
-      if (emptyPointIndex !== -1) {
-        sections[emptyPointIndex].content = part;
+  // Extract content using regex with tags
+  const introMatch = content.match(/<intro>(.*?)<\/intro>/s);
+  const sectionMatches = content.match(/<section>(.*?)<\/section>/gs);
+  const conclusionMatch = content.match(/<conclusion>(.*?)<\/conclusion>/s);
+
+  if (introMatch) {
+    sections[0].content = introMatch[1].trim();
+  }
+
+  if (sectionMatches) {
+    sectionMatches.forEach((match: string, index: number) => {
+      if (index < 3) { // We only want 3 key points
+        const content = match.replace(/<\/?section>/g, '').trim();
+        sections[index + 1].content = content;
       }
-    }
-  });
+    });
+  }
+
+  if (conclusionMatch) {
+    sections[4].content = conclusionMatch[1].trim();
+  }
+
+  // Validate that all sections have content
+  const emptySections = sections.filter(s => !s.content);
+  if (emptySections.length > 0) {
+    console.error('Some sections are empty:', emptySections);
+    throw new Error('Failed to generate complete lesson content');
+  }
 
   return sections;
 };
