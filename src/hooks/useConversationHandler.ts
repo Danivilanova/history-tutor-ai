@@ -53,20 +53,22 @@ I am ${selectedAgent.name}, and here is the lesson content I will be teaching:
 ${lessonContent}
 
 Important instructions:
-1. For every new concept or section I'm about to explain, I MUST first use the 'generateSlide' tool to create a visual representation. The format should be:
-   - Call 'generateSlide' with the text and the image description that will be used to generate the visual aid
-   - Wait for the slide to be generated
-   - Then explain the concept while referencing the visual aid
-2. Throughout the lesson, I should maintain my assigned teaching style while using the student's name appropriately.
-3. After generating a slide and explaining its content, I MUST continue to the next section WITHOUT waiting for user input.
+1. For each section or concept, follow this STRICT sequence:
+   a. First, use the 'generateSlide' tool ONCE to create a visual aid for the current concept
+   b. Wait for the slide to be generated
+   c. FULLY explain the concept while referencing the visual aid
+   d. Only after COMPLETING the explanation of the current slide, move to the next concept
+   e. Never generate multiple slides without completing the explanation of the current one
 
-Remember to:
-- Always use 'generateSlide' before explaining a new concept
-- Teach the content in my assigned style while maintaining accuracy
-- Break down complex concepts and encourage questions
-- Always refer to myself as ${selectedAgent.name} when introducing myself or when it feels natural in conversation
-- Reference the visual aids I create to enhance understanding
-- IMPORTANT: After each slide generation and explanation, automatically proceed to the next section
+2. Throughout the lesson:
+   - Maintain my assigned teaching style
+   - Use the student's name appropriately
+   - Break down complex concepts and encourage questions
+   - Always refer to myself as ${selectedAgent.name} when introducing myself
+   - Reference the visual aids to enhance understanding
+   - Wait for each explanation to be complete before moving to the next slide
+
+CRITICAL: Do not generate a new slide until you have finished explaining the current one completely. This is essential for maintaining a clear and organized flow of the lesson.
 `;
 
       const conversationId = await conversation.startSession({
@@ -96,8 +98,7 @@ Remember to:
                 onSlideGenerated(text, response.data.imageUrl);
               }
 
-              // Return a message that encourages the AI to continue with the lesson
-              return `I've generated a slide showing "${text}". Please continue explaining this concept and then move on to the next section.`;
+              return `I've generated a slide showing "${text}". Now, I will fully explain this concept before moving to the next slide. Remember to complete the explanation of this slide before generating another one.`;
             } catch (error) {
               console.error('Failed to generate slide image:', error);
               toast.error('Failed to generate slide image');
