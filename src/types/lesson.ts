@@ -13,7 +13,7 @@ export interface GeneratedContent {
 }
 
 export interface TutorAgent {
-  id: string;
+  voiceId: string;
   name: string;
   prompt: string;
   firstMessage: string;

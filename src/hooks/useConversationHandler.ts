@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { TutorAgent } from '@/types/lesson';
 import { supabase } from '@/integrations/supabase/client';
 import { getSignedUrl, requestMicrophonePermission } from '@/utils/lessonUtils';
+import { AGENT_ID } from '@/constants/lesson';
 
 export function useConversationHandler(
   selectedAgent: TutorAgent,
@@ -39,7 +40,7 @@ export function useConversationHandler(
         return;
       }
 
-      const signedUrl = await getSignedUrl(selectedAgent.id);
+      const signedUrl = await getSignedUrl(AGENT_ID);
 
       const lessonContent = sections?.map(section => {
         return `${section.title}:\n${section.content}`;
@@ -79,12 +80,15 @@ CRITICAL: Do not generate a new slide until you have finished explaining the cur
               prompt: enhancedPrompt
             },
             firstMessage: selectedAgent.firstMessage
+          },
+          tts: {
+            voiceId: selectedAgent.voiceId
           }
         },
         clientTools: {
           generateSlide: async ({ text, image_description }) => {
             console.log("Generating slide with text:", text, "and image description:", image_description);
-            
+
             try {
               const response = await supabase.functions.invoke('generate-slide-image', {
                 body: { image_description }
