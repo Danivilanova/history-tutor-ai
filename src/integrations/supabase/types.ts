@@ -9,41 +9,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      generated_content: {
-        Row: {
-          created_at: string | null
-          generated_image_url: string
-          generated_text: string
-          id: string
-          prompt: string
-          section_id: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          generated_image_url: string
-          generated_text: string
-          id?: string
-          prompt: string
-          section_id?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          generated_image_url?: string
-          generated_text?: string
-          id?: string
-          prompt?: string
-          section_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "generated_content_section_id_fkey"
-            columns: ["section_id"]
-            isOneToOne: false
-            referencedRelation: "lesson_sections"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       lesson_sections: {
         Row: {
           content: string
