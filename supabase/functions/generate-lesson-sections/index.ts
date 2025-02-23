@@ -81,11 +81,28 @@ Create a lesson following this exact format with clear XML tags for all elements
   const data = await response.json();
   const content = data.response;
 
-  // Extract title and difficulty using regex
-  const titleMatch = content.match(/<title>(.*?)<\/title>/);
-  const difficultyMatch = content.match(/<difficulty>(.*?)<\/difficulty>/);
+  // Log the raw response for debugging
+  console.log('Raw AI response:', content);
+
+  if (!content) {
+    throw new Error('Empty response from AI service');
+  }
+
+  // Extract lesson metadata
+  const lessonMatch = content.match(/<lesson>(.*?)<\/lesson>/s);
+  if (!lessonMatch) {
+    console.error('Invalid lesson format, raw content:', content);
+    throw new Error('Generated content is not in the correct format');
+  }
+
+  const lessonContent = lessonMatch[1];
+  
+  // Extract title and difficulty
+  const titleMatch = lessonContent.match(/<title>(.*?)<\/title>/);
+  const difficultyMatch = lessonContent.match(/<difficulty>(.*?)<\/difficulty>/);
   
   if (!titleMatch || !difficultyMatch) {
+    console.error('Missing metadata, content:', lessonContent);
     throw new Error('Failed to extract lesson metadata');
   }
 
@@ -96,7 +113,7 @@ Create a lesson following this exact format with clear XML tags for all elements
   const sections = [];
 
   // Extract intro section
-  const introMatch = content.match(/<intro>.*?<title>(.*?)<\/title>.*?<content>(.*?)<\/content>.*?<\/intro>/s);
+  const introMatch = lessonContent.match(/<intro>.*?<title>(.*?)<\/title>.*?<content>(.*?)<\/content>.*?<\/intro>/s);
   if (introMatch) {
     sections.push({
       title: introMatch[1].trim(),
@@ -107,7 +124,7 @@ Create a lesson following this exact format with clear XML tags for all elements
   }
 
   // Extract main sections
-  const sectionMatches = content.matchAll(/<section>.*?<title>(.*?)<\/title>.*?<content>(.*?)<\/content>.*?<\/section>/gs);
+  const sectionMatches = Array.from(lessonContent.matchAll(/<section>.*?<title>(.*?)<\/title>.*?<content>(.*?)<\/content>.*?<\/section>/gs));
   let sectionIndex = 1;
   for (const match of sectionMatches) {
     if (sectionIndex <= 3) {
@@ -122,7 +139,7 @@ Create a lesson following this exact format with clear XML tags for all elements
   }
 
   // Extract conclusion
-  const conclusionMatch = content.match(/<conclusion>.*?<title>(.*?)<\/title>.*?<content>(.*?)<\/content>.*?<\/conclusion>/s);
+  const conclusionMatch = lessonContent.match(/<conclusion>.*?<title>(.*?)<\/title>.*?<content>(.*?)<\/content>.*?<\/conclusion>/s);
   if (conclusionMatch) {
     sections.push({
       title: conclusionMatch[1].trim(),
@@ -134,15 +151,18 @@ Create a lesson following this exact format with clear XML tags for all elements
 
   // Validate sections
   if (sections.length !== 5) {
-    console.error('Invalid number of sections:', sections.length);
-    throw new Error('Failed to generate all required sections');
+    console.error('Invalid number of sections:', sections.length, 'Raw content:', content);
+    throw new Error(`Failed to generate all required sections (got ${sections.length}, expected 5)`);
   }
 
   const emptySections = sections.filter(s => !s.content || !s.title);
   if (emptySections.length > 0) {
-    console.error('Some sections are incomplete:', emptySections);
+    console.error('Some sections are incomplete:', emptySections, 'Raw content:', content);
     throw new Error('Failed to generate complete lesson content');
   }
+
+  // Log successful generation
+  console.log('Successfully generated lesson:', { title, difficulty, sectionCount: sections.length });
 
   return {
     title,
@@ -163,6 +183,7 @@ serve(async (req) => {
       throw new Error('Topic is required');
     }
 
+    console.log('Generating lesson for topic:', topic);
     const lesson = await generateLessonContent(topic);
     
     return new Response(
@@ -174,7 +195,10 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error generating lesson:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        details: error.stack
+      }),
       { 
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
