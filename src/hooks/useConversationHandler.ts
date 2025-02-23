@@ -69,7 +69,16 @@ Important instructions:
    - Reference the visual aids to enhance understanding
    - Wait for each explanation to be complete before moving to the next slide
 
-CRITICAL: Do not generate a new slide until you have finished explaining the current one completely. This is essential for maintaining a clear and organized flow of the lesson.
+3. Lesson Completion:
+   - When all sections have been covered, provide a brief summary of the key points
+   - Ask the student if they have any final questions
+   - After addressing final questions, use the 'endLesson' tool to properly conclude the lesson
+   - Always end with a positive and encouraging message before using 'endLesson'
+
+CRITICAL RULES:
+- Do not generate a new slide until you have finished explaining the current one completely
+- Use 'endLesson' only after covering all content and addressing final questions
+- Never end the lesson abruptly without proper conclusion
 `;
 
       const conversationId = await conversation.startSession({
@@ -88,7 +97,7 @@ CRITICAL: Do not generate a new slide until you have finished explaining the cur
         clientTools: {
           generateSlide: async ({ text, image_description }) => {
             console.log("Generating slide with text:", text, "and image description:", image_description);
-
+            
             try {
               const response = await supabase.functions.invoke('generate-slide-image', {
                 body: { image_description }
@@ -108,6 +117,11 @@ CRITICAL: Do not generate a new slide until you have finished explaining the cur
               toast.error('Failed to generate slide image');
               return "Failed to generate slide. Please continue with the lesson.";
             }
+          },
+          endLesson: async () => {
+            console.log("Ending lesson");
+            await conversation.endSession();
+            return "Lesson ended successfully. Thank you for your attention!";
           }
         },
       });
