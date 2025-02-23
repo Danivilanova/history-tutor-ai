@@ -3,7 +3,7 @@ import { FC } from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import ReactConfetti from 'react-confetti';
-import { Confetti, ArrowLeft } from 'lucide-react';
+import { Party, ArrowLeft } from 'lucide-react';
 
 interface CompletionSlideProps {
   agentName: string;
@@ -22,7 +22,7 @@ const CompletionSlide: FC<CompletionSlideProps> = ({ agentName }) => {
       />
       
       <div className="flex flex-col items-center gap-4 animate-fade-in text-center">
-        <Confetti className="w-16 h-16 text-primary animate-bounce" />
+        <Party className="w-16 h-16 text-primary animate-bounce" />
         <h2 className="text-2xl font-semibold">Congratulations!</h2>
         <p className="text-lg text-muted-foreground">
           {`${agentName} is proud of your progress! You've successfully completed this lesson.`}
