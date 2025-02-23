@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
+import ReactConfetti from 'react-confetti';
 import SpeakingIndicator from '@/components/SpeakingIndicator';
 import LessonHeader from '@/components/lesson/LessonHeader';
 import SlideContent from '@/components/lesson/SlideContent';
@@ -10,6 +11,7 @@ import CompletionSlide from '@/components/lesson/CompletionSlide';
 import { supabase } from "@/integrations/supabase/client";
 import { useLesson } from '@/hooks/useLesson';
 import { TUTOR_AGENTS } from '@/constants/lesson';
+import { useState, useEffect } from 'react';
 import type { LessonSection, GeneratedContent } from '@/types/lesson';
 
 const LessonScreen = () => {
@@ -17,6 +19,22 @@ const LessonScreen = () => {
   const tutorPersonality = (searchParams.get('personality') || 'friendly') as keyof typeof TUTOR_AGENTS;
   const selectedAgent = TUTOR_AGENTS[tutorPersonality];
   const lessonTitle = searchParams.get('title') || "The Fall of Rome";
+  const [windowDimensions, setWindowDimensions] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowDimensions({
+        width: window.innerWidth,
+        height: window.innerHeight
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const { data: sections, isLoading } = useQuery({
     queryKey: ['lessonSections', lessonTitle],
@@ -65,6 +83,15 @@ const LessonScreen = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5">
+      {isLessonComplete && (
+        <ReactConfetti
+          style={{ position: 'fixed', top: 0, left: 0, zIndex: 100 }}
+          width={windowDimensions.width}
+          height={windowDimensions.height}
+          recycle={false}
+          numberOfPieces={200}
+        />
+      )}
       <div className="max-w-4xl mx-auto relative min-h-screen p-2 sm:p-4 flex flex-col">
         <div className="py-2 animate-fade-in">
           <LessonHeader
