@@ -6,6 +6,7 @@ import { useSearchParams } from 'react-router-dom';
 import SpeakingIndicator from '@/components/SpeakingIndicator';
 import LessonHeader from '@/components/lesson/LessonHeader';
 import SlideContent from '@/components/lesson/SlideContent';
+import CompletionSlide from '@/components/lesson/CompletionSlide';
 import { supabase } from "@/integrations/supabase/client";
 import { useLesson } from '@/hooks/useLesson';
 import { TUTOR_AGENTS } from '@/constants/lesson';
@@ -49,6 +50,7 @@ const LessonScreen = () => {
     isMuted,
     volume,
     isConversationStarted,
+    isLessonComplete,
     startConversation,
     handleVolumeChange,
   } = useLesson(selectedAgent, sections?.sections);
@@ -95,11 +97,15 @@ const LessonScreen = () => {
             </div>
 
             <div className="flex-1 flex items-center justify-center p-4">
-              {currentSlide && (
-                <SlideContent
-                  text={currentSlide.text}
-                  image={currentSlide.imageUrl}
-                />
+              {isLessonComplete ? (
+                <CompletionSlide agentName={selectedAgent.name} />
+              ) : (
+                currentSlide && (
+                  <SlideContent
+                    text={currentSlide.text}
+                    image={currentSlide.imageUrl}
+                  />
+                )
               )}
             </div>
 

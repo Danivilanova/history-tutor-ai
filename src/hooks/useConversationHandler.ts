@@ -12,7 +12,8 @@ export function useConversationHandler(
   onStart: () => void,
   onSpeakingChange: (speaking: boolean) => void,
   volume: number,
-  onSlideGenerated?: (text: string, imageUrl: string) => void
+  onSlideGenerated?: (text: string, imageUrl: string) => void,
+  onLessonComplete?: () => void
 ) {
   const conversation = useConversation({
     onConnect: () => {
@@ -120,6 +121,9 @@ CRITICAL RULES:
           },
           endLesson: async () => {
             console.log("Ending lesson");
+            if (onLessonComplete) {
+              onLessonComplete();
+            }
             await conversation.endSession();
             return "Lesson ended successfully. Thank you for your attention!";
           }

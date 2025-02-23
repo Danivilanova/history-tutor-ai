@@ -14,6 +14,7 @@ export function useLesson(selectedAgent: TutorAgent, sections?: any[]) {
   const [isMuted, setIsMuted] = useState(false);
   const [volume, setVolume] = useState(0.5);
   const [isConversationStarted, setIsConversationStarted] = useState(false);
+  const [isLessonComplete, setIsLessonComplete] = useState(false);
 
   console.log('useLesson - Initializing with agent:', {
     name: selectedAgent.name,
@@ -31,7 +32,8 @@ export function useLesson(selectedAgent: TutorAgent, sections?: any[]) {
     volume,
     (text, imageUrl) => {
       setCurrentSlide({ text, imageUrl });
-    }
+    },
+    () => setIsLessonComplete(true)
   );
 
   const handleVolumeChange = (newVolume: number) => {
@@ -49,6 +51,7 @@ export function useLesson(selectedAgent: TutorAgent, sections?: any[]) {
     isMuted,
     volume,
     isConversationStarted,
+    isLessonComplete,
     startConversation,
     handleVolumeChange,
   };
