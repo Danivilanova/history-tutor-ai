@@ -18,7 +18,7 @@ const LessonScreen = () => {
   const [searchParams] = useSearchParams();
   const tutorPersonality = (searchParams.get('personality') || 'friendly') as keyof typeof TUTOR_AGENTS;
   const selectedAgent = TUTOR_AGENTS[tutorPersonality];
-  const lessonTitle = searchParams.get('title') || "The Fall of Rome";
+  const lessonId = searchParams.get('id');
   const [windowDimensions, setWindowDimensions] = useState({
     width: window.innerWidth,
     height: window.innerHeight
@@ -36,30 +36,33 @@ const LessonScreen = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const { data: sections, isLoading } = useQuery({
-    queryKey: ['lessonSections', lessonTitle],
+  const { data: lessonData, isLoading } = useQuery({
+    queryKey: ['lesson', lessonId],
     queryFn: async () => {
+      if (!lessonId) throw new Error('Lesson ID is required');
+
       const { data: lesson } = await supabase
         .from('lessons')
-        .select('id')
-        .eq('title', lessonTitle)
+        .select('*')
+        .eq('id', lessonId)
         .single();
 
       if (!lesson) {
         throw new Error('Lesson not found');
       }
 
-      const { data } = await supabase
+      const { data: sections } = await supabase
         .from('lesson_sections')
         .select('*, generated_content(*)')
-        .eq('lesson_id', lesson.id)
+        .eq('lesson_id', lessonId)
         .order('order_index');
 
       return {
-        lessonId: lesson.id,
-        sections: data as (LessonSection & { generated_content: GeneratedContent[] })[]
+        lesson,
+        sections: sections as (LessonSection & { generated_content: GeneratedContent[] })[]
       };
-    }
+    },
+    enabled: !!lessonId
   });
 
   const {
@@ -71,7 +74,7 @@ const LessonScreen = () => {
     isLessonComplete,
     startConversation,
     handleVolumeChange,
-  } = useLesson(selectedAgent, sections?.sections);
+  } = useLesson(selectedAgent, lessonData?.sections);
 
   if (isLoading) {
     return (
@@ -95,7 +98,7 @@ const LessonScreen = () => {
       <div className="max-w-4xl mx-auto relative min-h-screen p-2 sm:p-4 flex flex-col">
         <div className="py-2 animate-fade-in">
           <LessonHeader
-            title={lessonTitle}
+            title={lessonData?.lesson.title || "Loading..."}
             isMuted={isMuted}
             volume={volume}
             onMuteToggle={() => handleVolumeChange(isMuted ? 0.5 : 0)}

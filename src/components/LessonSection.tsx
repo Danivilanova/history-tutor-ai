@@ -10,7 +10,7 @@ import { useNavigate } from 'react-router-dom';
 interface LessonSectionProps {
   selectedPersonality: string | null;
   onGenerateLesson: (topic: string) => void;
-  onStartLesson: (title: string) => void;
+  onStartLesson: (lessonId: string) => void;
 }
 
 const LessonSection = ({
@@ -35,11 +35,11 @@ const LessonSection = ({
     }
   });
 
-  const handleStartLesson = (title: string) => {
-    console.log('Starting lesson with:', { title, personality: selectedPersonality });
-    onStartLesson(title);
+  const handleStartLesson = (lessonId: string) => {
+    console.log('Starting lesson with:', { lessonId, personality: selectedPersonality });
+    onStartLesson(lessonId);
     const searchParams = new URLSearchParams();
-    searchParams.set('title', title);
+    searchParams.set('id', lessonId);
     searchParams.set('personality', selectedPersonality || 'friendly');
     navigate(`/lesson?${searchParams.toString()}`);
   };
@@ -83,7 +83,6 @@ const LessonSection = ({
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {isLoading ? (
-            // Loading state with skeleton cards
             Array.from({ length: 4 }).map((_, index) => (
               <div key={index} className="animate-pulse bg-primary/5 rounded-lg h-[240px]" />
             ))
@@ -93,7 +92,7 @@ const LessonSection = ({
                 key={lesson.id}
                 title={lesson.title}
                 difficulty={lesson.difficulty}
-                onStart={() => handleStartLesson(lesson.title)}
+                onStart={() => handleStartLesson(lesson.id)}
                 backgroundImage={lesson.background_image || undefined}
               />
             ))
