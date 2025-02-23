@@ -13,26 +13,26 @@ const generateSections = async (topic: string) => {
 
 Example format:
 <intro>
-The solar system is a fascinating cosmic neighborhood that has captivated humans for millennia. From the ancient astronomers to modern space exploration, our understanding has evolved dramatically.
+Renaissance art emerged in Italy around 1300 AD, peaking from 1400 AD to 1600 AD, during a cultural rebirth after the Middle Ages. It began in Florence with patrons like the Medici family funding artists. This period saw a shift to realistic human forms and perspective, driven by masters like Leonardo da Vinci, born 1452 AD, Michelangelo, born 1475 AD, and Raphael, born 1483 AD. Over 10,000 artworks survive from this era across Italy, France, and beyond.
 </intro>
 
 <section>
-The Sun, our central star, provides energy and gravity that holds the system together. This massive ball of hydrogen and helium drives the processes that make life possible on Earth.
+Artists used linear perspective, developed by Filippo Brunelleschi in 1413 AD, to create depth, as seen in Masaccio's "Holy Trinity" fresco from 1427 AD in Florence's Santa Maria Novella church. Chiaroscuro, a light-dark contrast technique, was mastered by Leonardo da Vinci in works like "Mona Lisa," painted 1503–1506 AD, using sfumato for soft edges. Oil paint, adopted from the Netherlands by 1470 AD, allowed detailed layering, as in Titian's "Venus of Urbino" from 1538 AD. Fresco painting on wet plaster, used since 1300 AD, covered 1,000 square feet in Michelangelo's Sistine Chapel ceiling, completed 1512 AD.
 </section>
 
 <section>
-The inner planets - Mercury, Venus, Earth, and Mars - are rocky worlds, each with unique characteristics but sharing a common origin in the solar nebula.
+Leonardo da Vinci, born April 15, 1452 AD in Vinci, died 1519 AD, painted "The Last Supper" in 1495–1498 AD on a Milan monastery wall, spanning 15 by 29 feet. Michelangelo Buonarroti, born March 6, 1475 AD in Caprese, died 1564 AD, sculpted "David," a 17-foot marble statue, from 1501–1504 AD in Florence, and painted the Sistine Chapel ceiling from 1508–1512 AD with 343 figures. Raphael Sanzio, born 1483 AD in Urbino, died 1520 AD, completed "School of Athens" in 1509–1511 AD in the Vatican, a 26-foot fresco showing 50 philosophers like Plato and Aristotle.
 </section>
 
 <section>
-The outer planets, known as gas giants, demonstrate the diversity of planetary formation. These massive worlds, from Jupiter to Neptune, tell us about the early solar system's evolution.
+Renaissance art focused on humanism, depicting realistic humans and emotions, as in Botticelli's "Birth of Venus" from 1486 AD, a 6-by-9-foot canvas. Religious themes dominated, with 80% of works like Giotto's "Lamentation" from 1305 AD in Padua's Scrovegni Chapel showing biblical scenes. The Medici family of Florence, ruling from 1434 AD under Cosimo de' Medici, spent over 600,000 florins by 1500 AD on art, funding da Vinci and Michelangelo. Pope Julius II, reigning 1503–1513 AD, commissioned Raphael's Vatican frescoes and Michelangelo's Sistine project.
 </section>
 
 <conclusion>
-Understanding our solar system helps us appreciate Earth's special place in space and guides our exploration of other star systems.
+Renaissance art, starting around 1300 AD in Florence and lasting to 1600 AD, transformed Europe with over 10,000 works, driven by the Medici and popes like Julius II, who died 1513 AD. Techniques like Brunelleschi's perspective from 1413 AD, da Vinci's chiaroscuro in "Mona Lisa" (1503–1506 AD), and oil paint from 1470 AD redefined realism. Masters like Michelangelo, with "David" (1501–1504 AD) and the Sistine Chapel (1508–1512 AD), and Raphael, with "School of Athens" (1509–1511 AD), blended humanism and religion, leaving a legacy in cities like Florence and Rome.
 </conclusion>
 
-Please create a lesson following this exact format, with clear tags and well-structured content for each section.`;
+Please create a lesson following this exact format, with clear tags and well-structured content for each section. Include specific details, dates, and examples like in this model.`;
 
   const response = await fetch('https://queue.fal.run/fal-ai/any-llm', {
     method: 'POST',
