@@ -1,69 +1,80 @@
-# Welcome to your Lovable project
+# History Tutor AI
 
-## Project info
+Hey there! 👋 I built History Tutor AI for the ElevenLabs & a16z AI Agents Hackathon, and I’m honestly really happy with the result. I got inspired by Andrej Karpathy’s vision for AI in education ([EurekaLabs](https://eurekalabs.ai)), and I wanted to make sure that history didn’t just feel like a series of dates and facts to memorize, but rather a fun conversation with a cool tutor. You can pick if your tutor is nice, strict, or funny, and talk to them like a friend!
 
-**URL**: https://lovable.dev/projects/cafeaad6-0efa-451c-a602-618c75b0d113
+## What It Does
 
-## How can I edit this code?
+Here’s what History Tutor AI can do:
 
-There are several ways of editing your application.
+- Pick Your Tutor: Choose a tutor who’s sweet (Sarah), serious (Dr. Thompson), or silly (Alex). Each one teaches in their own fun way!
+- Your Kind of Lessons: Try lessons we made, like "Ancient Egyptian Pyramids," or ask about any history topic you like!
+- Talk to Them: Chat with your tutor using your voice. Ask anything—it’s like talking to a real person!
+- Feel the Fun: Your tutor can cheer you up or make you laugh, depending on who you pick!
+- Win Big: Finish a lesson and get a fun confetti party to celebrate!
 
-**Use Lovable**
+## How It's Made
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/cafeaad6-0efa-451c-a602-618c75b0d113) and start prompting.
+I teamed up with [Lovable](https://lovable.dev/) to pull this off. Here’s the tech stack:
+- Frontend: React, TypeScript, Tailwind CSS, and shadcn-ui.
+- Backend: Supabase powers it all—edge functions, database, and storage.
+- AI:
+  - ElevenLabs for the voice interaction.
+  - fal.ai for the text and image generation.
 
-Changes made via Lovable will be committed automatically to this repo.
+## How to Set It Up
 
-**Use your preferred IDE**
+Want to try it out yourself? Here’s what you need to do:
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### What You’ll Need First
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- Node.js and npm installed on your machine.
+- Accounts and API keys from:
+  - [Supabase](https://supabase.com/)
+  - [ElevenLabs](https://elevenlabs.io/)
+  - [fal.ai](https://fal.ai/)
 
-Follow these steps:
+### Environment Variables
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+No `.env` file here! Since we’re using Supabase Edge Functions, you’ll set these as secrets in the Supabase dashboard. Head to Edge Functions > Secrets and add:
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+- `ELEVEN_LABS_API_KEY=<your-elevenlabs-api-key>`
+- `FAL_KEY=<your-fal-ai-key>`
 
-# Step 3: Install the necessary dependencies.
-npm i
+### Update Supabase Config
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+You’ll need to tweak your Supabase URL and publishable key in the code. Open up `src/integrations/supabase/client.ts` and update these lines:
+
+```typescript
+const SUPABASE_URL = "<your-supabase-url>";
+const SUPABASE_PUBLISHABLE_KEY = "<your-supabase-publishable-key>";
+```
+
+### Get It Running
+
+1. **Clone the repo**
+
+```bash
+git clone https://github.com/danivilanova/history-tutor-ai.git
+```
+
+2. **Install dependencies**
+
+```bash
+cd history-tutor-ai
+npm install
+```
+
+3. **Run the app**
+
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## Why I Built This
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+I’ve been obsessed with Andrej Karpathy’s ideas about AI in education—especially his work with Eureka Labs. The thought of an “AI-native school” got me hyped: what if everyone could have a personal tutor for anything? So I decided to build History Tutor AI. It’s not a perfect project, but I hope you find it interesting and useful!
 
-**Use GitHub Codespaces**
+## Links
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with .
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/cafeaad6-0efa-451c-a602-618c75b0d113) and click on Share -> Publish.
-
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+- Devpost Project: [History Tutor AI](https://devpost.com/software/history-tutor-ai)
+- Hackathon: [ElevenLabs & a16z AI Agents Hackathon](https://elevenlabs-worldwide-hackathon.devpost.com)
